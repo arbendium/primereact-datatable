@@ -1,0 +1,103 @@
+[-] createContent:
+- isVirtualScrollerDisabled()
+- props.virtualScrollerOptions
+- ptCallbacks
+- props.scrollHeight
+- [-] wrapperRef
+- [-] virtualScrollerRef
+- metaData
+- Sitamaja
+
+createTableHeader:
+- props.showHeaders
+- getSortField()
+- getSortOrder()
+- getMultiSortMeta()
+- getGroupRowSortField()
+- d_filtersState
+- <TableHeader> things
+
+createTableBody:
+- getFirst()
+- props.frozenValue
+- <TableBody> things
+- more <TableBody> things
+- spacerStyle
+- ptCallbacks
+- metaData
+
+[x] createTableFooter:
+- props
+- columns
+- props.footerColumnGroup
+- ptCallbacks
+- metaData
+
+[x] processedData:
+- props.value
+- props.lazy
+- getFilters()
+- getSortField()
+- getSortOrder()
+- getMultiSortMeta()
+- columns
+- getColumnProp()
+- props.globalFilter
+- filterLocal()
+- props.sortMode
+- sortSingle()
+- sortMultiple()
+
+[x] getFilters:
+- props.onFilter
+- props.getFilters
+- filtersState
+
+[x] getSortField:
+- props.onSort
+- props.sortField
+- sortFieldState
+
+[x] getSortOrder:
+- props.onSort
+- props.getSortOrder
+- sortOrderState
+
+[x] getMultiSortMeta:
+- props.onSort
+- props.multiSortMeta
+- multiSortMetaState
+
+[x] getColumnProp:
+
+[x] filterLocal:
+- getActiveFilters()
+- props.globalFilter
+- columns
+- getColumnProp()
+- executeLocalFilter()
+- props.filterLocale
+- props.value
+
+[x] getActiveFilters:
+
+[x] executeLocalFilter:
+ - props.filterLocale
+
+[x] sortSingle:
+- props.groupRowsBy
+- props.sortField
+- props.defaultSortOrder
+- sortMultiple()
+- context
+
+[x] sortMultiple:
+- props.groupRowsBy
+- groupRowsSortMetaState
+- multisortField()
+
+[x] multisortField:
+- compareValuesOnSort
+
+[x] compareValuesOnSort:
+- context
