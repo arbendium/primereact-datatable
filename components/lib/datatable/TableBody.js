@@ -1,12 +1,13 @@
 import * as React from 'react';
-import { localeOption } from '../api/Api';
-import { ColumnBase } from '../column/ColumnBase';
-import { useUnmountEffect, useUpdateEffect } from '../hooks/Hooks';
-import { DomHandler, ObjectUtils, mergeProps } from '../utils/Utils';
-import { BodyRow } from './BodyRow';
-import { RowTogglerButton } from './RowTogglerButton';
+import { localeOption } from 'primereact/api/api.esm.js';
+import { useUnmountEffect, useUpdateEffect } from 'primereact/hooks/hooks.esm.js';
+import { DomHandler, ObjectUtils, mergeProps } from 'primereact/utils/utils.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
+import { BodyRow } from './BodyRow.js';
+import { RowTogglerButton } from './RowTogglerButton.js';
 
 export const TableBody = React.memo(
+	// eslint-disable-next-line no-unused-vars
 	React.forwardRef((props, ref) => {
 		const {
 			ptm, ptmo, cx, isUnsyled
@@ -1064,27 +1065,26 @@ export const TableBody = React.memo(
 		};
 
 		const createContent = () => (
-			props.value
-                && props.value.map((rowData, index) => {
-                	const rowIndex = getVirtualScrollerOption('getItemOptions') ? getVirtualScrollerOption('getItemOptions')(index).index : props.first + index;
-                	const key = getRowKey(rowData, rowIndex);
-                	const expanded = isRowExpanded(rowData);
-                	const colSpan = getColumnsLength();
+			props.value && props.value.map((rowData, index) => {
+				const rowIndex = getVirtualScrollerOption('getItemOptions') ? getVirtualScrollerOption('getItemOptions')(index).index : props.first + index;
+				const key = getRowKey(rowData, rowIndex);
+				const expanded = isRowExpanded(rowData);
+				const colSpan = getColumnsLength();
 
-                	const groupHeader = createGroupHeader(rowData, rowIndex, expanded, colSpan);
-                	const row = createRow(rowData, rowIndex, index, expanded);
-                	const expansion = createExpansion(rowData, rowIndex, expanded, colSpan);
-                	const groupFooter = createGroupFooter(rowData, rowIndex, expanded, colSpan);
+				const groupHeader = createGroupHeader(rowData, rowIndex, expanded, colSpan);
+				const row = createRow(rowData, rowIndex, index, expanded);
+				const expansion = createExpansion(rowData, rowIndex, expanded, colSpan);
+				const groupFooter = createGroupFooter(rowData, rowIndex, expanded, colSpan);
 
-                	return (
-                		<React.Fragment key={key}>
-                			{groupHeader}
-                			{row}
-                			{expansion}
-                			{groupFooter}
- </React.Fragment>
-                	);
-                })
+				return (
+					<React.Fragment key={key}>
+						{groupHeader}
+						{row}
+						{expansion}
+						{groupFooter}
+					</React.Fragment>
+				);
+			})
 		);
 
 		const content = props.empty ? createEmptyContent() : createContent();

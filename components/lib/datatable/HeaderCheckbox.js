@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { IconUtils, mergeProps } from '../utils/Utils';
-import { CheckIcon } from '../icons/check';
-import { ColumnBase } from '../column/ColumnBase';
+import { IconUtils, mergeProps } from 'primereact/utils/utils.esm.js';
+import { CheckIcon } from 'primereact/icons/check/index.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
 
 export const HeaderCheckbox = React.memo(props => {
 	const [focusedState, setFocusedState] = React.useState(false);

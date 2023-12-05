@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { ColumnBase } from '../column/ColumnBase';
-import { DomHandler, mergeProps } from '../utils/Utils';
+import { DomHandler, mergeProps } from 'primereact/utils/utils.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
 
 export const RowRadioButton = React.memo(props => {
 	const [focusedState, setFocusedState] = React.useState(false);

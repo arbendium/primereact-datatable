@@ -1,20 +1,20 @@
 import * as React from 'react';
-import { ariaLabel } from '../api/Api';
-import { ColumnBase } from '../column/ColumnBase';
-import { useEventListener, useUnmountEffect, useUpdateEffect } from '../hooks/Hooks';
-import { BarsIcon } from '../icons/bars';
-import { CheckIcon } from '../icons/check';
-import { ChevronDownIcon } from '../icons/chevrondown';
-import { ChevronRightIcon } from '../icons/chevronright';
-import { PencilIcon } from '../icons/pencil';
-import { TimesIcon } from '../icons/times';
-import { OverlayService } from '../overlayservice/OverlayService';
-import { Ripple } from '../ripple/Ripple';
+import { ariaLabel } from 'primereact/api/api.esm.js';
+import { useEventListener, useUnmountEffect, useUpdateEffect } from 'primereact/hooks/hooks.esm.js';
+import { BarsIcon } from 'primereact/icons/bars/index.esm.js';
+import { CheckIcon } from 'primereact/icons/check/index.esm.js';
+import { ChevronDownIcon } from 'primereact/icons/chevrondown/index.esm.js';
+import { ChevronRightIcon } from 'primereact/icons/chevronright/index.esm.js';
+import { PencilIcon } from 'primereact/icons/pencil/index.esm.js';
+import { TimesIcon } from 'primereact/icons/times/index.esm.js';
+import { OverlayService } from 'primereact/overlayservice/overlayservice.esm.js';
+import { Ripple } from 'primereact/ripple/ripple.esm.js';
 import {
 	DomHandler, IconUtils, ObjectUtils, classNames, mergeProps
-} from '../utils/Utils';
-import { RowCheckbox } from './RowCheckbox';
-import { RowRadioButton } from './RowRadioButton';
+} from 'primereact/utils/utils.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
+import { RowCheckbox } from './RowCheckbox.js';
+import { RowRadioButton } from './RowRadioButton.js';
 
 export const BodyCell = React.memo(props => {
 	const [editingState, setEditingState] = React.useState(props.editing);
@@ -356,7 +356,7 @@ export const BodyCell = React.memo(props => {
 
 			switch (event.which) {
 			// left arrow
-			case 37:
+			case 37: {
 				const prevCell = findPrevSelectableCell(cell);
 
 				if (prevCell) {
@@ -366,9 +366,9 @@ export const BodyCell = React.memo(props => {
 
 				event.preventDefault();
 				break;
-
-				// right arrow
-			case 39:
+			}
+			// right arrow
+			case 39: {
 				const nextCell = findNextSelectableCell(cell);
 
 				if (nextCell) {
@@ -378,9 +378,9 @@ export const BodyCell = React.memo(props => {
 
 				event.preventDefault();
 				break;
-
-				// up arrow
-			case 38:
+			}
+			// up arrow
+			case 38: {
 				const upCell = findUpSelectableCell(cell);
 
 				if (upCell) {
@@ -390,9 +390,9 @@ export const BodyCell = React.memo(props => {
 
 				event.preventDefault();
 				break;
-
-				// down arrow
-			case 40:
+			}
+			// down arrow
+			case 40: {
 				const downCell = findDownSelectableCell(cell);
 
 				if (downCell) {
@@ -402,9 +402,9 @@ export const BodyCell = React.memo(props => {
 
 				event.preventDefault();
 				break;
-
-				// enter
-			case 13:
+			}
+			// enter
+			case 13: {
 				if (event.shiftKey || event.ctrlKey) {
 					// #5192 allow TextArea to add new lines
 				} else if (!DomHandler.isClickable(target)) {
@@ -413,8 +413,8 @@ export const BodyCell = React.memo(props => {
 				}
 
 				break;
-
-				// space
+			}
+			// space
 			case 32:
 				if (!DomHandler.isClickable(target) && !target.readOnly) {
 					onClick(event);
@@ -511,7 +511,6 @@ export const BodyCell = React.memo(props => {
 
 			props.onEditingMetaChange(params);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [editingState]);
 
 	useUnmountEffect(() => {
@@ -783,13 +782,11 @@ export const BodyCell = React.memo(props => {
 			);
 
 			const editorKeyHelperLabelProps = mergeProps(getColumnPTOptions('editorKeyHelper'));
-			/* eslint-disable */
-            editorKeyHelper = (
-                <a ref={keyHelperRef} {...editorKeyHelperProps}>
-                    <span {...editorKeyHelperLabelProps}></span>
-                </a>
-            );
-            /* eslint-enable */
+			editorKeyHelper = (
+				<a ref={keyHelperRef} {...editorKeyHelperProps}>
+					<span {...editorKeyHelperLabelProps} />
+				</a>
+			);
 		}
 
 		const bodyCellProps = mergeProps(

@@ -1,9 +1,9 @@
-import * as React from 'react';
-import { ColumnBase } from '../column/ColumnBase';
+import React from 'react';
 import {
 	classNames, DomHandler, mergeProps, ObjectUtils
-} from '../utils/Utils';
-import { BodyCell } from './BodyCell';
+} from 'primereact/utils/utils.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
+import { BodyCell } from './BodyCell.js';
 
 export const BodyRow = React.memo(props => {
 	const [editingState, setEditingState] = React.useState(false);
@@ -141,7 +141,7 @@ export const BodyRow = React.memo(props => {
 
 			switch (event.which) {
 			// down arrow
-			case 40:
+			case 40: {
 				const nextRow = findNextSelectableRow(row);
 
 				if (nextRow) {
@@ -151,9 +151,9 @@ export const BodyRow = React.memo(props => {
 
 				event.preventDefault();
 				break;
-
-				// up arrow
-			case 38:
+			}
+			// up arrow
+			case 38: {
 				const prevRow = findPrevSelectableRow(row);
 
 				if (prevRow) {
@@ -163,8 +163,8 @@ export const BodyRow = React.memo(props => {
 
 				event.preventDefault();
 				break;
-
-				// enter
+			}
+			// enter
 			case 13: // @deprecated
 				if (!DomHandler.isClickable(target)) {
 					onClick(event);
