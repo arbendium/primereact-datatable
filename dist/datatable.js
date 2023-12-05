@@ -4775,7 +4775,7 @@ TableHeader.displayName = 'TableHeader';
 const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
   const context = React.useContext(PrimeReactContext);
   const mergeProps = useMergeProps();
-  const props = DataTableBase.getProps(inProps, context);
+  const props = React.useMemo(() => DataTableBase.getProps(inProps, context), [inProps, context]);
   const [firstState, setFirstState] = React.useState(props.first);
   const [rowsState, setRowsState] = React.useState(props.rows);
   const [sortFieldState, setSortFieldState] = React.useState(props.sortField);
@@ -4787,26 +4787,47 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
   const [editingMetaState, setEditingMetaState] = React.useState({});
   const [d_rowsState, setD_rowsState] = React.useState(props.rows);
   const [d_filtersState, setD_filtersState] = React.useState({});
-  const metaData = {
-    props,
-    state: {
-      first: firstState,
-      rows: rowsState,
-      sortField: sortFieldState,
-      sortOrder: sortOrderState,
-      multiSortMeta: multiSortMetaState,
-      filters: filtersState,
-      columnOrder: columnOrderState,
-      groupRowsSortMeta: groupRowsSortMetaState,
-      editingMeta: editingMetaState,
-      d_rows: d_rowsState,
-      d_filters: d_filtersState
-    },
-    context: {
-      scrollable: props.scrollable
-    }
-  };
-  const ptCallbacks = DataTableBase.setMetaData(metaData);
+  const [metaData, ptCallbacks] = React.useMemo(() => {
+    const metaData = {
+      props,
+      state: new Proxy({
+        // first: firstState,
+        // rows: rowsState,
+        // sortField: sortFieldState,
+        // sortOrder: sortOrderState,
+        // multiSortMeta: multiSortMetaState,
+        // filters: filtersState,
+        // columnOrder: columnOrderState,
+        // groupRowsSortMeta: groupRowsSortMetaState,
+        // editingMeta: editingMetaState,
+        // d_rows: d_rowsState,
+        // d_filters: d_filtersState
+      }, {
+        get(target, prop, receiver) {
+          // eslint-disable-next-line no-debugger
+          debugger;
+          return Reflect.get(target, prop, receiver);
+        }
+      }),
+      context: {
+        scrollable: props.scrollable
+      }
+    };
+    const ptCallbacks = DataTableBase.setMetaData(metaData);
+    return [metaData, ptCallbacks];
+  }, [props,
+  // firstState,
+  // rowsState,
+  // sortFieldState,
+  // sortOrderState,
+  // multiSortMetaState,
+  // filtersState,
+  // columnOrderState,
+  // groupRowsSortMetaState,
+  // editingMetaState,
+  // d_rowsState,
+  // d_filtersState,
+  props.scrollable]);
   useHandleStyle(DataTableBase.css.styles, ptCallbacks.isUnstyled, {
     name: 'datatable'
   });
@@ -4864,20 +4885,18 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
   const isVirtualScrollerDisabled = () => ObjectUtils.isEmpty(props.virtualScrollerOptions) || !props.scrollable;
   const isEquals = (data1, data2) => props.compareSelectionBy === 'equals' ? data1 === data2 : ObjectUtils.equals(data1, data2, props.dataKey);
   const hasFilter = () => ObjectUtils.isNotEmpty(getFilters()) || props.globalFilter;
-  const getFirst = () => props.onPage ? props.first : firstState;
-  const getRows = () => props.onPage ? props.rows : rowsState;
-  const getSortField = () => props.onSort ? props.sortField : sortFieldState;
-  const getSortOrder = () => props.onSort ? props.sortOrder : sortOrderState;
-  const getMultiSortMeta = () => (props.onSort ? props.multiSortMeta : multiSortMetaState) || [];
-  const getFilters = () => props.onFilter ? props.filters : filtersState;
-  const getColumnProp = (column, name) => ColumnBase.getCProp(column, name);
-  const findColumnByKey = (columns, key) => ObjectUtils.isNotEmpty(columns) ? columns.find(col => getColumnProp(col, 'columnKey') === key || getColumnProp(col, 'field') === key) : null;
-  const getColumns = ignoreReorderable => {
-    const columns = React.Children.toArray(props.children);
-    if (!columns) {
-      return null;
-    }
-    if (!ignoreReorderable && props.reorderableColumns && columnOrderState) {
+  const getFirst = React.useCallback(() => props.onPage ? props.first : firstState, [props.onPage, props.first, firstState]);
+  const getRows = React.useCallback(() => props.onPage ? props.rows : rowsState, [props.onPage, props.rows, rowsState]);
+  const getSortField = React.useCallback(() => props.onSort ? props.sortField : sortFieldState, [props.onSort, props.sortField, sortFieldState]);
+  const getSortOrder = React.useCallback(() => props.onSort ? props.sortOrder : sortOrderState, [props.onSort, props.sortOrder, sortOrderState]);
+  const getMultiSortMeta = React.useCallback(() => (props.onSort ? props.multiSortMeta : multiSortMetaState) || [], [props.onSort, props.multiSortMeta, multiSortMetaState]);
+  const getFilters = React.useCallback(() => props.onFilter ? props.filters : filtersState, [props.onFilter, props.filters, filtersState]);
+  const getColumnProp = React.useCallback((column, name) => ColumnBase.getCProp(column, name), []);
+  const unorderedColumns = React.useMemo(() => React.Children.toArray(props.children), [props.children]);
+  const findColumnByKey = React.useCallback((columns, key) => ObjectUtils.isNotEmpty(columns) ? columns.find(col => getColumnProp(col, 'columnKey') === key || getColumnProp(col, 'field') === key) : null, []);
+  const columns = React.useMemo(() => {
+    const columns = unorderedColumns;
+    if (columns && props.reorderableColumns && columnOrderState) {
       const orderedColumns = columnOrderState.reduce((arr, columnKey) => {
         const column = findColumnByKey(columns, columnKey);
         column && arr.push(column);
@@ -4886,7 +4905,7 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       return [...orderedColumns, ...columns.filter(col => orderedColumns.indexOf(col) < 0)];
     }
     return columns;
-  };
+  }, [unorderedColumns, props.reorderableColumns, columnOrderState, findColumnByKey]);
   const getStorage = () => {
     switch (props.stateStorage) {
       case 'local':
@@ -5134,7 +5153,7 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
     return null;
   };
   const getTotalRecords = data => props.lazy ? props.totalRecords : data ? data.length : 0;
-  const onEditingMetaChange = e => {
+  const onEditingMetaChange = React.useCallback(e => {
     const {
       rowData,
       field,
@@ -5158,7 +5177,7 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       !fields.length ? delete editingMeta[editingKey] : meta.fields = fields;
     }
     setEditingMetaState(editingMeta);
-  };
+  }, [editingMetaState]);
   const clearEditingMetaData = () => {
     if (props.editMode && ObjectUtils.isNotEmpty(editingMetaState)) {
       setEditingMetaState({});
@@ -5383,7 +5402,6 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
         allowDrop = false;
       }
       if (allowDrop) {
-        const columns = getColumns();
         const isSameColumn = (col1, col2) => getColumnProp(col1, 'columnKey') || getColumnProp(col2, 'columnKey') ? ObjectUtils.equals(col1.props, col2.props, 'columnKey') : ObjectUtils.equals(col1.props, col2.props, 'field');
         const dragColIndex = columns.findIndex(child => isSameColumn(child, draggedColumn.current));
         let dropColIndex = columns.findIndex(child => isSameColumn(child, column));
@@ -5553,7 +5571,7 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
     }
   };
   const getCalculatedSortOrder = currentOrder => props.removableSort ? props.defaultSortOrder === currentOrder ? currentOrder * -1 : 0 : currentOrder * -1;
-  const compareValuesOnSort = (value1, value2, comparator, order) => ObjectUtils.sort(value1, value2, order, comparator, context && context.nullSortOrder || PrimeReact.nullSortOrder);
+  const compareValuesOnSort = React.useCallback((value1, value2, comparator, order) => ObjectUtils.sort(value1, value2, order, comparator, context && context.nullSortOrder || PrimeReact.nullSortOrder), [context]);
   const addSortMeta = (meta, multiSortMeta) => {
     const index = multiSortMeta.findIndex(sortMeta => sortMeta.field === meta.field);
     if (index >= 0) {
@@ -5569,7 +5587,7 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
     }
     multiSortMeta = multiSortMeta.length > 0 ? multiSortMeta : null;
   };
-  const multisortField = (data1, data2, multiSortMeta, index, comparator) => {
+  const multisortField = React.useCallback((data1, data2, multiSortMeta, index, comparator) => {
     if (!multiSortMeta || !multiSortMeta[index]) {
       return;
     }
@@ -5581,8 +5599,8 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       return multiSortMeta.length - 1 > index ? multisortField(data1, data2, multiSortMeta, index + 1, comparator) : 0;
     }
     return compareValuesOnSort(value1, value2, comparator, multiSortMeta[index].order);
-  };
-  const sortMultiple = (data, multiSortMeta = []) => {
+  }, [compareValuesOnSort]);
+  const sortMultiple = React.useCallback((data, multiSortMeta = []) => {
     if (props.groupRowsBy && (groupRowsSortMetaState || multiSortMeta.length && props.groupRowsBy === multiSortMeta[0].field)) {
       let groupRowsSortMeta = groupRowsSortMetaState;
       const firstSortMeta = multiSortMeta[0];
@@ -5610,8 +5628,8 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       value.sort((data1, data2) => multisortField(data1, data2, multiSortMeta, 0, comparator));
     }
     return value;
-  };
-  const sortSingle = (data, field, order) => {
+  }, [props.groupRowsBy, groupRowsSortMetaState, props.defaultSortOrder, multisortField]);
+  const sortSingle = React.useCallback((data, field, order) => {
     if (props.groupRowsBy && props.groupRowsBy === props.sortField) {
       const multiSortMeta = [{
         field: props.sortField,
@@ -5644,7 +5662,7 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       });
     }
     return value;
-  };
+  }, [props.groupRowsBy, props.sortField, props.sortOrder, props.defaultSortOrder, sortMultiple, context]);
   const onFilterChange = filters => {
     clearEditingMetaData();
     setD_filtersState(filters);
@@ -5668,7 +5686,7 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       }
     }, props.filterDelay);
   };
-  const getActiveFilters = filters => {
+  const getActiveFilters = React.useCallback(filters => {
     const removeEmptyFilters = ([key, value]) => {
       if (value.constraints) {
         const filteredConstraints = value.constraints.filter(constraint => constraint.value !== null);
@@ -5686,20 +5704,19 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
     const filterValidEntries = entry => entry !== undefined;
     const entries = Object.entries(filters).map(removeEmptyFilters).filter(filterValidEntries);
     return Object.fromEntries(entries);
-  };
-  const executeLocalFilter = (field, rowData, filterMeta, index) => {
+  }, []);
+  const executeLocalFilter = React.useCallback((field, rowData, filterMeta, index) => {
     const filterValue = filterMeta.value;
     const filterMatchMode = filterMeta.matchMode === 'custom' ? `custom_${field}` : filterMeta.matchMode || FilterMatchMode.STARTS_WITH;
     const dataFieldValue = ObjectUtils.resolveFieldData(rowData, field);
     const filterConstraint = FilterService.filters[filterMatchMode];
     return ObjectUtils.isFunction(filterConstraint) && filterConstraint(dataFieldValue, filterValue, props.filterLocale, index);
-  };
-  const filterLocal = (data, filters) => {
+  }, [props.filterLocale]);
+  const filterLocal = React.useCallback((data, filters) => {
     if (!data) {
       return;
     }
     const activeFilters = filters ? getActiveFilters(filters) : {};
-    const columns = getColumns();
     let filteredValue = [];
     const isGlobalFilter = activeFilters.global || props.globalFilter;
     let globalFilterFieldsArray;
@@ -5759,7 +5776,7 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       filteredValue = data;
     }
     return filteredValue;
-  };
+  }, [props.globalFilter, props.globalFilterFields, columns, getColumnProp, executeLocalFilter, props.filterLocale, props.globalFilterMatchMode, props.value]);
   const cloneFilters = filters => {
     filters = filters || props.filters;
     let cloned = {};
@@ -5775,7 +5792,6 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
         };
       });
     } else {
-      const columns = getColumns();
       cloned = columns.reduce((filters, col) => {
         const field = getColumnProp(col, 'filterField') || getColumnProp(col, 'field');
         const filterFunction = getColumnProp(col, 'filterFunction');
@@ -5845,7 +5861,7 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
     destroyStyleElement();
   };
   const resetColumnOrder = () => {
-    const columns = getColumns(true);
+    const columns = unorderedColumns;
     let columnOrder = [];
     if (columns) {
       columnOrder = columns.reduce((orders, col) => {
@@ -5858,7 +5874,6 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
   const exportCSV = options => {
     let data;
     let csv = '\ufeff';
-    const columns = getColumns();
     if (options && options.selectionOnly) {
       data = props.selection || [];
     } else {
@@ -5929,7 +5944,7 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
     filters: getFilters(),
     ...event
   });
-  const processedData = localState => {
+  const processedData = React.useCallback(localState => {
     let data = props.value || [];
     if (!props.lazy) {
       if (data && data.length) {
@@ -5937,7 +5952,6 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
         const sortField = localState && localState.sortField || getSortField();
         const sortOrder = localState && localState.sortOrder || getSortOrder();
         const multiSortMeta = localState && localState.multiSortMeta || getMultiSortMeta();
-        const columns = getColumns();
         const sortColumn = columns.find(col => getColumnProp(col, 'field') === sortField);
         if (sortColumn) {
           columnSortable.current = getColumnProp(sortColumn, 'sortable');
@@ -5956,14 +5970,14 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       }
     }
     return data;
-  };
-  const dataToRender = data => {
+  }, [props.value, props.lazy, getFilters, getSortField, getSortOrder, getMultiSortMeta, columns, getColumnProp, props.globalFilter, filterLocal, props.sortMode, sortSingle, sortMultiple]);
+  const dataToRender = React.useCallback(data => {
     if (data && props.paginator) {
       const first = props.lazy ? 0 : getFirst();
       return data.slice(first, first + getRows());
     }
     return data;
-  };
+  }, [props.paginator, props.lazy, getFirst, getRows]);
   useMountEffect(() => {
     if (elementRef.current) {
       attributeSelector.current = UniqueComponentId();
@@ -6142,6 +6156,7 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       spacerStyle,
       itemSize
     } = options;
+    const value = React.useMemo(() => dataToRender(rows), [dataToRender, rows]);
     const frozenBody = ObjectUtils.isNotEmpty(props.frozenValue) && /*#__PURE__*/React.createElement(TableBody, {
       hostName: "DataTable",
       ref: frozenBodyRef,
@@ -6217,8 +6232,9 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       tabIndex: props.tabIndex,
       tableProps: props,
       tableSelector: attributeSelector.current,
-      value: props.frozenValue,
-      virtualScrollerOptions: options,
+      value: props.frozenValue
+      // virtualScrollerOptions={options}
+      ,
       ptCallbacks: ptCallbacks,
       metaData: metaData
     });
@@ -6299,9 +6315,10 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       tabIndex: props.tabIndex,
       tableProps: props,
       tableSelector: attributeSelector.current,
-      value: dataToRender(rows),
-      virtualScrollerContentRef: contentRef,
-      virtualScrollerOptions: options,
+      value: value,
+      virtualScrollerContentRef: contentRef
+      // virtualScrollerOptions={options}
+      ,
       ptCallbacks: ptCallbacks,
       metaData: metaData
     });
@@ -6316,7 +6333,7 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
     }) : null;
     return /*#__PURE__*/React.createElement(React.Fragment, null, frozenBody, body, spacerBody);
   };
-  const createTableFooter = options => {
+  const createTableFooter = React.useCallback(options => {
     const {
       columns
     } = options;
@@ -6328,8 +6345,13 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       ptCallbacks: ptCallbacks,
       metaData: metaData
     });
-  };
-  const createContent = (processedData, columns, selectionModeInColumn, empty) => {
+  }, [props, props.footerColumnGroup, columns, ptCallbacks, metaData]);
+  const data = processedData();
+  const totalRecords = getTotalRecords(data);
+  const empty = ObjectUtils.isEmpty(data);
+  const selectionModeInColumn = getSelectionModeInColumn(columns);
+  const selectable = props.selectionMode || selectionModeInColumn;
+  const createContent = (processedData, columns) => {
     if (!columns) {
       return;
     }
@@ -6342,6 +6364,23 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
         maxHeight: _isVirtualScrollerDisabled ? props.scrollHeight : null
       }
     }, ptCallbacks.ptm('wrapper'));
+    const virtualScrollerContentTemplate = React.useCallback(options => {
+      const ref = el => {
+        tableRef.current = el;
+        options.spacerRef && options.spacerRef(el);
+      };
+      const tableHeader = createTableHeader(options, empty, _isVirtualScrollerDisabled);
+      const tableBody = createTableBody(options, selectionModeInColumn, empty, _isVirtualScrollerDisabled);
+      const tableFooter = createTableFooter(options);
+      const tableProps = mergeProps({
+        className: classNames(props.tableClassName, ptCallbacks.cx('table')),
+        style: props.tableStyle,
+        role: 'table'
+      }, ptCallbacks.ptm('table'));
+      return /*#__PURE__*/React.createElement("table", _extends({
+        ref: ref
+      }, tableProps), tableHeader, tableBody, tableFooter);
+    }, [props, empty, selectionModeInColumn, metaData, _isVirtualScrollerDisabled, createTableHeader, createTableBody, createTableFooter, data, columns]);
     return /*#__PURE__*/React.createElement("div", _extends({
       ref: wrapperRef
     }, wrapperProps), /*#__PURE__*/React.createElement(VirtualScroller, _extends({
@@ -6364,26 +6403,8 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       __parentMetadata: {
         parent: metaData
       },
-      showSpacer: false
-      // eslint-disable-next-line react/no-unstable-nested-components
-      ,
-      contentTemplate: options => {
-        const ref = el => {
-          tableRef.current = el;
-          options.spacerRef && options.spacerRef(el);
-        };
-        const tableHeader = createTableHeader(options, empty, _isVirtualScrollerDisabled);
-        const tableBody = createTableBody(options, selectionModeInColumn, empty, _isVirtualScrollerDisabled);
-        const tableFooter = createTableFooter(options);
-        const tableProps = mergeProps({
-          className: classNames(props.tableClassName, ptCallbacks.cx('table')),
-          style: props.tableStyle,
-          role: 'table'
-        }, ptCallbacks.ptm('table'));
-        return /*#__PURE__*/React.createElement("table", _extends({
-          ref: ref
-        }, tableProps), tableHeader, tableBody, tableFooter);
-      }
+      showSpacer: false,
+      contentTemplate: virtualScrollerContentTemplate
     })));
   };
   const createFooter = () => {
@@ -6482,16 +6503,10 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
     }
     return null;
   };
-  const data = processedData();
-  const columns = getColumns();
-  const totalRecords = getTotalRecords(data);
-  const empty = ObjectUtils.isEmpty(data);
-  const selectionModeInColumn = getSelectionModeInColumn(columns);
-  const selectable = props.selectionMode || selectionModeInColumn;
   const loader = createLoader();
   const header = createHeader();
   const paginatorTop = createPaginatorTop(totalRecords);
-  const content = createContent(data, columns, selectionModeInColumn, empty);
+  const content = createContent(data, columns);
   const paginatorBottom = createPaginatorBottom(totalRecords);
   const footer = createFooter();
   const resizeHelper = createResizeHelper();
