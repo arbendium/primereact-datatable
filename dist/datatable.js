@@ -4871,6 +4871,7 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
   const getMultiSortMeta = () => (props.onSort ? props.multiSortMeta : multiSortMetaState) || [];
   const getFilters = () => props.onFilter ? props.filters : filtersState;
   const getColumnProp = (column, name) => ColumnBase.getCProp(column, name);
+  const findColumnByKey = (columns, key) => ObjectUtils.isNotEmpty(columns) ? columns.find(col => getColumnProp(col, 'columnKey') === key || getColumnProp(col, 'field') === key) : null;
   const getColumns = ignoreReorderable => {
     const columns = React.Children.toArray(props.children);
     if (!columns) {
@@ -5132,7 +5133,6 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
     }
     return null;
   };
-  const findColumnByKey = (columns, key) => ObjectUtils.isNotEmpty(columns) ? columns.find(col => getColumnProp(col, 'columnKey') === key || getColumnProp(col, 'field') === key) : null;
   const getTotalRecords = data => props.lazy ? props.totalRecords : data ? data.length : 0;
   const onEditingMetaChange = e => {
     const {
@@ -5569,6 +5569,48 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
     }
     multiSortMeta = multiSortMeta.length > 0 ? multiSortMeta : null;
   };
+  const multisortField = (data1, data2, multiSortMeta, index, comparator) => {
+    if (!multiSortMeta || !multiSortMeta[index]) {
+      return;
+    }
+    const value1 = ObjectUtils.resolveFieldData(data1, multiSortMeta[index].field);
+    const value2 = ObjectUtils.resolveFieldData(data2, multiSortMeta[index].field);
+
+    // check if they are equal handling dates and locales
+    if (ObjectUtils.compare(value1, value2, comparator) === 0) {
+      return multiSortMeta.length - 1 > index ? multisortField(data1, data2, multiSortMeta, index + 1, comparator) : 0;
+    }
+    return compareValuesOnSort(value1, value2, comparator, multiSortMeta[index].order);
+  };
+  const sortMultiple = (data, multiSortMeta = []) => {
+    if (props.groupRowsBy && (groupRowsSortMetaState || multiSortMeta.length && props.groupRowsBy === multiSortMeta[0].field)) {
+      let groupRowsSortMeta = groupRowsSortMetaState;
+      const firstSortMeta = multiSortMeta[0];
+      if (!groupRowsSortMeta) {
+        groupRowsSortMeta = firstSortMeta;
+        setGroupRowsSortMetaState(groupRowsSortMeta);
+      }
+      if (firstSortMeta.field !== groupRowsSortMeta.field) {
+        multiSortMeta = [groupRowsSortMeta, ...multiSortMeta];
+      }
+    }
+    let value = [...data];
+    if (columnSortable.current && columnSortFunction.current) {
+      const meta = multiSortMeta.find(meta => meta.field === columnField.current);
+      const field = columnField.current;
+      const order = meta ? meta.order : props.defaultSortOrder;
+      value = columnSortFunction.current({
+        data,
+        field,
+        order,
+        multiSortMeta
+      });
+    } else {
+      const comparator = ObjectUtils.localeComparator(context && context.locale || PrimeReact.locale);
+      value.sort((data1, data2) => multisortField(data1, data2, multiSortMeta, 0, comparator));
+    }
+    return value;
+  };
   const sortSingle = (data, field, order) => {
     if (props.groupRowsBy && props.groupRowsBy === props.sortField) {
       const multiSortMeta = [{
@@ -5602,48 +5644,6 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       });
     }
     return value;
-  };
-  const sortMultiple = (data, multiSortMeta = []) => {
-    if (props.groupRowsBy && (groupRowsSortMetaState || multiSortMeta.length && props.groupRowsBy === multiSortMeta[0].field)) {
-      let groupRowsSortMeta = groupRowsSortMetaState;
-      const firstSortMeta = multiSortMeta[0];
-      if (!groupRowsSortMeta) {
-        groupRowsSortMeta = firstSortMeta;
-        setGroupRowsSortMetaState(groupRowsSortMeta);
-      }
-      if (firstSortMeta.field !== groupRowsSortMeta.field) {
-        multiSortMeta = [groupRowsSortMeta, ...multiSortMeta];
-      }
-    }
-    let value = [...data];
-    if (columnSortable.current && columnSortFunction.current) {
-      const meta = multiSortMeta.find(meta => meta.field === columnField.current);
-      const field = columnField.current;
-      const order = meta ? meta.order : props.defaultSortOrder;
-      value = columnSortFunction.current({
-        data,
-        field,
-        order,
-        multiSortMeta
-      });
-    } else {
-      const comparator = ObjectUtils.localeComparator(context && context.locale || PrimeReact.locale);
-      value.sort((data1, data2) => multisortField(data1, data2, multiSortMeta, 0, comparator));
-    }
-    return value;
-  };
-  const multisortField = (data1, data2, multiSortMeta, index, comparator) => {
-    if (!multiSortMeta || !multiSortMeta[index]) {
-      return;
-    }
-    const value1 = ObjectUtils.resolveFieldData(data1, multiSortMeta[index].field);
-    const value2 = ObjectUtils.resolveFieldData(data2, multiSortMeta[index].field);
-
-    // check if they are equal handling dates and locales
-    if (ObjectUtils.compare(value1, value2, comparator) === 0) {
-      return multiSortMeta.length - 1 > index ? multisortField(data1, data2, multiSortMeta, index + 1, comparator) : 0;
-    }
-    return compareValuesOnSort(value1, value2, comparator, multiSortMeta[index].order);
   };
   const onFilterChange = filters => {
     clearEditingMetaData();
@@ -5686,6 +5686,13 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
     const filterValidEntries = entry => entry !== undefined;
     const entries = Object.entries(filters).map(removeEmptyFilters).filter(filterValidEntries);
     return Object.fromEntries(entries);
+  };
+  const executeLocalFilter = (field, rowData, filterMeta, index) => {
+    const filterValue = filterMeta.value;
+    const filterMatchMode = filterMeta.matchMode === 'custom' ? `custom_${field}` : filterMeta.matchMode || FilterMatchMode.STARTS_WITH;
+    const dataFieldValue = ObjectUtils.resolveFieldData(rowData, field);
+    const filterConstraint = FilterService.filters[filterMatchMode];
+    return ObjectUtils.isFunction(filterConstraint) && filterConstraint(dataFieldValue, filterValue, props.filterLocale, index);
   };
   const filterLocal = (data, filters) => {
     if (!data) {
@@ -5752,13 +5759,6 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       filteredValue = data;
     }
     return filteredValue;
-  };
-  const executeLocalFilter = (field, rowData, filterMeta, index) => {
-    const filterValue = filterMeta.value;
-    const filterMatchMode = filterMeta.matchMode === 'custom' ? `custom_${field}` : filterMeta.matchMode || FilterMatchMode.STARTS_WITH;
-    const dataFieldValue = ObjectUtils.resolveFieldData(rowData, field);
-    const filterConstraint = FilterService.filters[filterMatchMode];
-    return ObjectUtils.isFunction(filterConstraint) && filterConstraint(dataFieldValue, filterValue, props.filterLocale, index);
   };
   const cloneFilters = filters => {
     filters = filters || props.filters;
