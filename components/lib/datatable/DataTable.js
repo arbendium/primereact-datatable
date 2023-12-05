@@ -22,7 +22,7 @@ import { TableHeader } from './TableHeader.js';
 
 export const DataTable = React.forwardRef((inProps, ref) => {
 	const context = React.useContext(PrimeReactContext);
-	const props = DataTableBase.getProps(inProps, context);
+	const props = React.useMemo(() => DataTableBase.getProps(inProps, context), [inProps, context]);
 	const [firstState, setFirstState] = React.useState(props.first);
 	const [rowsState, setRowsState] = React.useState(props.rows);
 	const [sortFieldState, setSortFieldState] = React.useState(props.sortField);
@@ -34,26 +34,55 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 	const [editingMetaState, setEditingMetaState] = React.useState({});
 	const [d_rowsState, setD_rowsState] = React.useState(props.rows);
 	const [d_filtersState, setD_filtersState] = React.useState({});
-	const metaData = {
+	const [metaData, ptCallbacks] = React.useMemo(() => {
+		const metaData = {
+			props,
+			state: new Proxy(
+				{
+				// first: firstState,
+				// rows: rowsState,
+				// sortField: sortFieldState,
+				// sortOrder: sortOrderState,
+				// multiSortMeta: multiSortMetaState,
+				// filters: filtersState,
+				// columnOrder: columnOrderState,
+				// groupRowsSortMeta: groupRowsSortMetaState,
+				// editingMeta: editingMetaState,
+				// d_rows: d_rowsState,
+				// d_filters: d_filtersState
+				},
+				{
+					get(target, prop, receiver) {
+						// eslint-disable-next-line no-debugger
+						debugger;
+
+						return Reflect.get(target, prop, receiver);
+					}
+				}
+			),
+			context: {
+				scrollable: props.scrollable
+			}
+		};
+
+		const ptCallbacks = DataTableBase.setMetaData(metaData);
+
+		return [metaData, ptCallbacks];
+	}, [
 		props,
-		state: {
-			first: firstState,
-			rows: rowsState,
-			sortField: sortFieldState,
-			sortOrder: sortOrderState,
-			multiSortMeta: multiSortMetaState,
-			filters: filtersState,
-			columnOrder: columnOrderState,
-			groupRowsSortMeta: groupRowsSortMetaState,
-			editingMeta: editingMetaState,
-			d_rows: d_rowsState,
-			d_filters: d_filtersState
-		},
-		context: {
-			scrollable: props.scrollable
-		}
-	};
-	const ptCallbacks = DataTableBase.setMetaData(metaData);
+		// firstState,
+		// rowsState,
+		// sortFieldState,
+		// sortOrderState,
+		// multiSortMetaState,
+		// filtersState,
+		// columnOrderState,
+		// groupRowsSortMetaState,
+		// editingMetaState,
+		// d_rowsState,
+		// d_filtersState,
+		props.scrollable
+	]);
 
 	useHandleStyle(DataTableBase.css.styles, ptCallbacks.isUnstyled, { name: 'datatable' });
 	const attributeSelector = React.useRef('');
@@ -118,30 +147,28 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 
 	const hasFilter = () => ObjectUtils.isNotEmpty(getFilters()) || props.globalFilter;
 
-	const getFirst = () => props.onPage ? props.first : firstState;
+	const getFirst = React.useCallback(() => props.onPage ? props.first : firstState, [props.onPage, props.first, firstState]);
 
-	const getRows = () => props.onPage ? props.rows : rowsState;
+	const getRows = React.useCallback(() => props.onPage ? props.rows : rowsState, [props.onPage, props.rows, rowsState]);
 
-	const getSortField = () => props.onSort ? props.sortField : sortFieldState;
+	const getSortField = React.useCallback(() => props.onSort ? props.sortField : sortFieldState, [props.onSort, props.sortField, sortFieldState]);
 
-	const getSortOrder = () => props.onSort ? props.sortOrder : sortOrderState;
+	const getSortOrder = React.useCallback(() => props.onSort ? props.sortOrder : sortOrderState, [props.onSort, props.sortOrder, sortOrderState]);
 
-	const getMultiSortMeta = () => (props.onSort ? props.multiSortMeta : multiSortMetaState) || [];
+	const getMultiSortMeta = React.useCallback(() => (props.onSort ? props.multiSortMeta : multiSortMetaState) || [], [props.onSort, props.multiSortMeta, multiSortMetaState]);
 
-	const getFilters = () => props.onFilter ? props.filters : filtersState;
+	const getFilters = React.useCallback(() => props.onFilter ? props.filters : filtersState, [props.onFilter, props.filters, filtersState]);
 
-	const getColumnProp = (column, name) => ColumnBase.getCProp(column, name);
+	const getColumnProp = React.useCallback((column, name) => ColumnBase.getCProp(column, name), []);
 
-	const findColumnByKey = (columns, key) => ObjectUtils.isNotEmpty(columns) ? columns.find(col => getColumnProp(col, 'columnKey') === key || getColumnProp(col, 'field') === key) : null;
+	const unorderedColumns = React.useMemo(() => React.Children.toArray(props.children), [props.children]);
 
-	const getColumns = ignoreReorderable => {
-		const columns = React.Children.toArray(props.children);
+	const findColumnByKey = React.useCallback((columns, key) => ObjectUtils.isNotEmpty(columns) ? columns.find(col => getColumnProp(col, 'columnKey') === key || getColumnProp(col, 'field') === key) : null, []);
 
-		if (!columns) {
-			return null;
-		}
+	const columns = React.useMemo(() => {
+		const columns = unorderedColumns;
 
-		if (!ignoreReorderable && props.reorderableColumns && columnOrderState) {
+		if (columns && props.reorderableColumns && columnOrderState) {
 			const orderedColumns = columnOrderState.reduce((arr, columnKey) => {
 				const column = findColumnByKey(columns, columnKey);
 
@@ -154,7 +181,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		}
 
 		return columns;
-	};
+	}, [unorderedColumns, props.reorderableColumns, columnOrderState, findColumnByKey]);
 
 	const getStorage = () => {
 		switch (props.stateStorage) {
@@ -456,7 +483,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 
 	const getTotalRecords = data => props.lazy ? props.totalRecords : data ? data.length : 0;
 
-	const onEditingMetaChange = e => {
+	const onEditingMetaChange = React.useCallback(e => {
 		const {
 			rowData, field, editingKey, editing
 		} = e;
@@ -473,7 +500,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		}
 
 		setEditingMetaState(editingMeta);
-	};
+	}, [editingMetaState]);
 
 	const clearEditingMetaData = () => {
 		if (props.editMode && ObjectUtils.isNotEmpty(editingMetaState)) {
@@ -717,7 +744,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 			}
 
 			if (allowDrop) {
-				const columns = getColumns();
 				const isSameColumn = (col1, col2) => (getColumnProp(col1, 'columnKey') || getColumnProp(col2, 'columnKey') ? ObjectUtils.equals(col1.props, col2.props, 'columnKey') : ObjectUtils.equals(col1.props, col2.props, 'field'));
 				const dragColIndex = columns.findIndex(child => isSameColumn(child, draggedColumn.current));
 				let dropColIndex = columns.findIndex(child => isSameColumn(child, column));
@@ -906,7 +932,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 
 	const getCalculatedSortOrder = currentOrder => props.removableSort ? (props.defaultSortOrder === currentOrder ? currentOrder * -1 : 0) : currentOrder * -1;
 
-	const compareValuesOnSort = (value1, value2, comparator, order) => ObjectUtils.sort(value1, value2, order, comparator, (context && context.nullSortOrder) || PrimeReact.nullSortOrder);
+	const compareValuesOnSort = React.useCallback((value1, value2, comparator, order) => ObjectUtils.sort(value1, value2, order, comparator, (context && context.nullSortOrder) || PrimeReact.nullSortOrder), [context]);
 
 	const addSortMeta = (meta, multiSortMeta) => {
 		const index = multiSortMeta.findIndex(sortMeta => sortMeta.field === meta.field);
@@ -925,7 +951,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		multiSortMeta = multiSortMeta.length > 0 ? multiSortMeta : null;
 	};
 
-	const multisortField = (data1, data2, multiSortMeta, index, comparator) => {
+	const multisortField = React.useCallback((data1, data2, multiSortMeta, index, comparator) => {
 		if (!multiSortMeta || !multiSortMeta[index]) {
 			return;
 		}
@@ -939,9 +965,9 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		}
 
 		return compareValuesOnSort(value1, value2, comparator, multiSortMeta[index].order);
-	};
+	}, [compareValuesOnSort]);
 
-	const sortMultiple = (data, multiSortMeta = []) => {
+	const sortMultiple = React.useCallback((data, multiSortMeta = []) => {
 		if (props.groupRowsBy && (groupRowsSortMetaState || (multiSortMeta.length && props.groupRowsBy === multiSortMeta[0].field))) {
 			let groupRowsSortMeta = groupRowsSortMetaState;
 			const firstSortMeta = multiSortMeta[0];
@@ -973,9 +999,9 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		}
 
 		return value;
-	};
+	}, [props.groupRowsBy, groupRowsSortMetaState, props.defaultSortOrder, multisortField]);
 
-	const sortSingle = (data, field, order) => {
+	const sortSingle = React.useCallback((data, field, order) => {
 		if (props.groupRowsBy && props.groupRowsBy === props.sortField) {
 			const multiSortMeta = [{ field: props.sortField, order: props.sortOrder || props.defaultSortOrder }];
 
@@ -1006,7 +1032,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		}
 
 		return value;
-	};
+	}, [props.groupRowsBy, props.sortField, props.sortOrder, props.defaultSortOrder, sortMultiple, context]);
 
 	const onFilterChange = filters => {
 		clearEditingMetaData();
@@ -1032,7 +1058,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		}, props.filterDelay);
 	};
 
-	const getActiveFilters = filters => {
+	const getActiveFilters = React.useCallback(filters => {
 		const removeEmptyFilters = ([key, value]) => {
 			if (value.constraints) {
 				const filteredConstraints = value.constraints.filter(constraint => constraint.value !== null);
@@ -1051,23 +1077,22 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		const entries = Object.entries(filters).map(removeEmptyFilters).filter(filterValidEntries);
 
 		return Object.fromEntries(entries);
-	};
+	}, []);
 
-	const executeLocalFilter = (field, rowData, filterMeta, index) => {
+	const executeLocalFilter = React.useCallback((field, rowData, filterMeta, index) => {
 		const filterValue = filterMeta.value;
 		const filterMatchMode = filterMeta.matchMode === 'custom' ? `custom_${field}` : filterMeta.matchMode || FilterMatchMode.STARTS_WITH;
 		const dataFieldValue = ObjectUtils.resolveFieldData(rowData, field);
 		const filterConstraint = FilterService.filters[filterMatchMode];
 
 		return ObjectUtils.isFunction(filterConstraint) && filterConstraint(dataFieldValue, filterValue, props.filterLocale, index);
-	};
+	}, [props.filterLocale]);
 
-	const filterLocal = (data, filters) => {
+	const filterLocal = React.useCallback((data, filters) => {
 		if (!data) return;
 
 		const activeFilters = filters ? getActiveFilters(filters) : {};
 
-		const columns = getColumns();
 		let filteredValue = [];
 
 		const isGlobalFilter = activeFilters.global || props.globalFilter;
@@ -1144,7 +1169,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		}
 
 		return filteredValue;
-	};
+	}, [props.globalFilter, props.globalFilterFields, columns, getColumnProp, executeLocalFilter, props.filterLocale, props.globalFilterMatchMode, props.value]);
 
 	const cloneFilters = filters => {
 		filters = filters || props.filters;
@@ -1160,8 +1185,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 					: { ...value };
 			});
 		} else {
-			const columns = getColumns();
-
 			cloned = columns.reduce((filters, col) => {
 				const field = getColumnProp(col, 'filterField') || getColumnProp(col, 'field');
 				const filterFunction = getColumnProp(col, 'filterFunction');
@@ -1234,7 +1257,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 	};
 
 	const resetColumnOrder = () => {
-		const columns = getColumns(true);
+		const columns = unorderedColumns;
 		let columnOrder = [];
 
 		if (columns) {
@@ -1251,7 +1274,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 	const exportCSV = options => {
 		let data;
 		let csv = '\ufeff';
-		const columns = getColumns();
 
 		if (options && options.selectionOnly) {
 			data = props.selection || [];
@@ -1332,7 +1354,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		...event
 	});
 
-	const processedData = localState => {
+	const processedData = React.useCallback(localState => {
 		let data = props.value || [];
 
 		if (!props.lazy) {
@@ -1341,7 +1363,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 				const sortField = (localState && localState.sortField) || getSortField();
 				const sortOrder = (localState && localState.sortOrder) || getSortOrder();
 				const multiSortMeta = (localState && localState.multiSortMeta) || getMultiSortMeta();
-				const columns = getColumns();
 				const sortColumn = columns.find(col => getColumnProp(col, 'field') === sortField);
 
 				if (sortColumn) {
@@ -1361,9 +1382,23 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		}
 
 		return data;
-	};
+	}, [
+		props.value,
+		props.lazy,
+		getFilters,
+		getSortField,
+		getSortOrder,
+		getMultiSortMeta,
+		columns,
+		getColumnProp,
+		props.globalFilter,
+		filterLocal,
+		props.sortMode,
+		sortSingle,
+		sortMultiple
+	]);
 
-	const dataToRender = data => {
+	const dataToRender = React.useCallback(data => {
 		if (data && props.paginator) {
 			const first = props.lazy ? 0 : getFirst();
 
@@ -1371,7 +1406,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		}
 
 		return data;
-	};
+	}, [props.paginator, props.lazy, getFirst, getRows]);
 
 	useMountEffect(() => {
 		if (elementRef.current) {
@@ -1565,6 +1600,8 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 			rows, columns, contentRef, style, className, spacerStyle, itemSize
 		} = options;
 
+		const value = React.useMemo(() => dataToRender(rows), [dataToRender, rows]);
+
 		const frozenBody = ObjectUtils.isNotEmpty(props.frozenValue) && (
 			<TableBody
 				hostName="DataTable"
@@ -1642,7 +1679,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 				tableProps={props}
 				tableSelector={attributeSelector.current}
 				value={props.frozenValue}
-				virtualScrollerOptions={options}
+				// virtualScrollerOptions={options}
 				ptCallbacks={ptCallbacks}
 				metaData={metaData}
 			/>
@@ -1725,9 +1762,9 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 				tabIndex={props.tabIndex}
 				tableProps={props}
 				tableSelector={attributeSelector.current}
-				value={dataToRender(rows)}
+				value={value}
 				virtualScrollerContentRef={contentRef}
-				virtualScrollerOptions={options}
+				// virtualScrollerOptions={options}
 				ptCallbacks={ptCallbacks}
 				metaData={metaData}
 			/>
@@ -1745,13 +1782,19 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		);
 	};
 
-	const createTableFooter = options => {
+	const createTableFooter = React.useCallback(options => {
 		const { columns } = options;
 
 		return <TableFooter hostName="DataTable" tableProps={props} columns={columns} footerColumnGroup={props.footerColumnGroup} ptCallbacks={ptCallbacks} metaData={metaData} />;
-	};
+	}, [props, props.footerColumnGroup, columns, ptCallbacks, metaData]);
 
-	const createContent = (processedData, columns, selectionModeInColumn, empty) => {
+	const data = processedData();
+	const totalRecords = getTotalRecords(data);
+	const empty = ObjectUtils.isEmpty(data);
+	const selectionModeInColumn = getSelectionModeInColumn(columns);
+	const selectable = props.selectionMode || selectionModeInColumn;
+
+	const createContent = (processedData, columns) => {
 		if (!columns) return;
 
 		const _isVirtualScrollerDisabled = isVirtualScrollerDisabled();
@@ -1763,6 +1806,33 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 			},
 			ptCallbacks.ptm('wrapper')
 		);
+
+		const virtualScrollerContentTemplate = React.useCallback(options => {
+			const ref = el => {
+				tableRef.current = el;
+				options.spacerRef && options.spacerRef(el);
+			};
+
+			const tableHeader = createTableHeader(options, empty, _isVirtualScrollerDisabled);
+			const tableBody = createTableBody(options, selectionModeInColumn, empty, _isVirtualScrollerDisabled);
+			const tableFooter = createTableFooter(options);
+			const tableProps = mergeProps(
+				{
+					className: classNames(props.tableClassName, ptCallbacks.cx('table')),
+					style: props.tableStyle,
+					role: 'table'
+				},
+				ptCallbacks.ptm('table')
+			);
+
+			return (
+				<table ref={ref} {...tableProps}>
+					{tableHeader}
+					{tableBody}
+					{tableFooter}
+				</table>
+			);
+		}, [props, empty, selectionModeInColumn, metaData, _isVirtualScrollerDisabled, createTableHeader, createTableBody, createTableFooter, data, columns]);
 
 		return (
 			<div ref={wrapperRef} {...wrapperProps}>
@@ -1780,33 +1850,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 					pt={ptCallbacks.ptm('virtualScroller')}
 					__parentMetadata={{ parent: metaData }}
 					showSpacer={false}
-					// eslint-disable-next-line react/no-unstable-nested-components
-					contentTemplate={options => {
-						const ref = el => {
-							tableRef.current = el;
-							options.spacerRef && options.spacerRef(el);
-						};
-
-						const tableHeader = createTableHeader(options, empty, _isVirtualScrollerDisabled);
-						const tableBody = createTableBody(options, selectionModeInColumn, empty, _isVirtualScrollerDisabled);
-						const tableFooter = createTableFooter(options);
-						const tableProps = mergeProps(
-							{
-								className: classNames(props.tableClassName, ptCallbacks.cx('table')),
-								style: props.tableStyle,
-								role: 'table'
-							},
-							ptCallbacks.ptm('table')
-						);
-
-						return (
-							<table ref={ref} {...tableProps}>
-								{tableHeader}
-								{tableBody}
-								{tableFooter}
-							</table>
-						);
-					}}
+					contentTemplate={virtualScrollerContentTemplate}
 				/>
 			</div>
 		);
@@ -1918,17 +1962,10 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		return null;
 	};
 
-	const data = processedData();
-	const columns = getColumns();
-	const totalRecords = getTotalRecords(data);
-	const empty = ObjectUtils.isEmpty(data);
-	const selectionModeInColumn = getSelectionModeInColumn(columns);
-	const selectable = props.selectionMode || selectionModeInColumn;
-
 	const loader = createLoader();
 	const header = createHeader();
 	const paginatorTop = createPaginatorTop(totalRecords);
-	const content = createContent(data, columns, selectionModeInColumn, empty);
+	const content = createContent(data, columns);
 	const paginatorBottom = createPaginatorBottom(totalRecords);
 	const footer = createFooter();
 	const resizeHelper = createResizeHelper();
