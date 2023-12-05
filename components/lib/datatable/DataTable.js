@@ -1,24 +1,24 @@
 import * as React from 'react';
 import PrimeReact, {
 	FilterMatchMode, FilterOperator, FilterService, PrimeReactContext
-} from '../api/Api';
-import { ColumnBase } from '../column/ColumnBase';
-import { useHandleStyle } from '../componentbase/ComponentBase';
+} from 'primereact/api/api.esm.js';
+import { useHandleStyle } from 'primereact/componentbase/componentbase.esm.js';
 import {
 	useEventListener, useMergeProps, useMountEffect, useUnmountEffect, useUpdateEffect
-} from '../hooks/Hooks';
-import { ArrowDownIcon } from '../icons/arrowdown';
-import { ArrowUpIcon } from '../icons/arrowup';
-import { SpinnerIcon } from '../icons/spinner';
-import { Paginator } from '../paginator/Paginator';
+} from 'primereact/hooks/hooks.esm.js';
+import { ArrowDownIcon } from 'primereact/icons/arrowdown/index.esm.js';
+import { ArrowUpIcon } from 'primereact/icons/arrowup/index.esm.js';
+import { SpinnerIcon } from 'primereact/icons/spinner/index.esm.js';
+import { Paginator } from 'primereact/paginator/paginator.esm.js';
 import {
 	DomHandler, IconUtils, ObjectUtils, UniqueComponentId, classNames
-} from '../utils/Utils';
-import { VirtualScroller } from '../virtualscroller/VirtualScroller';
-import { DataTableBase } from './DataTableBase';
-import { TableBody } from './TableBody';
-import { TableFooter } from './TableFooter';
-import { TableHeader } from './TableHeader';
+} from 'primereact/utils/utils.esm.js';
+import { VirtualScroller } from 'primereact/virtualscroller/virtualscroller.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
+import { DataTableBase } from './DataTableBase.js';
+import { TableBody } from './TableBody.js';
+import { TableFooter } from './TableFooter.js';
+import { TableHeader } from './TableHeader.js';
 
 export const DataTable = React.forwardRef((inProps, ref) => {
 	const context = React.useContext(PrimeReactContext);
@@ -377,12 +377,12 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 			const style = `width: ${width}px !important; max-width: ${width}px !important`;
 
 			innerHTML += `
-                ${selector} > [data-pc-section="thead"] > tr > th:nth-child(${index + 1}),
-                ${selector} > [data-pc-section="tbody"] > tr > td:nth-child(${index + 1}),
-                ${selector} > [data-pc-section="tfoot"] > tr > td:nth-child(${index + 1}) {
-                    ${style}
-                }
-            `;
+				${selector} > [data-pc-section="thead"] > tr > th:nth-child(${index + 1}),
+				${selector} > [data-pc-section="tbody"] > tr > td:nth-child(${index + 1}),
+				${selector} > [data-pc-section="tfoot"] > tr > td:nth-child(${index + 1}) {
+					${style}
+				}
+			`;
 		});
 
 		styleElement.current.innerHTML = innerHTML;
@@ -471,7 +471,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 
 	const onEditingMetaChange = e => {
 		const {
-			rowData, field, editingKey, rowIndex, editing
+			rowData, field, editingKey, editing
 		} = e;
 		const editingMeta = { ...editingMetaState };
 		let meta = editingMeta[editingKey];
@@ -593,12 +593,12 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 			const style = `width: ${colWidth}px !important; max-width: ${colWidth}px !important`;
 
 			innerHTML += `
-                 ${selector} > [data-pc-section="thead"] > tr > th:nth-child(${index + 1}),
-                ${selector} > [data-pc-section="tbody"] > tr > td:nth-child(${index + 1}),
-                ${selector} > [data-pc-section="tfoot"] > tr > td:nth-child(${index + 1}) {
-                    ${style}
-                }
-            `;
+				${selector} > [data-pc-section="thead"] > tr > th:nth-child(${index + 1}),
+				${selector} > [data-pc-section="tbody"] > tr > td:nth-child(${index + 1}),
+				${selector} > [data-pc-section="tfoot"] > tr > td:nth-child(${index + 1}) {
+					${style}
+				}
+		`;
 		});
 
 		styleElement.current.innerHTML = innerHTML;
@@ -810,31 +810,31 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 			const gridLinesSelector = `.p-datatable[${attributeSelector.current}].p-datatable-gridlines > ${tableSelector}`;
 			const innerHTML = `
 @media screen and (max-width: ${props.breakpoint}) {
-    ${selector} > .p-datatable-thead > tr > th,
-    ${selector} > .p-datatable-tfoot > tr > td {
-        display: none;
-    }
+	${selector} > .p-datatable-thead > tr > th,
+	${selector} > .p-datatable-tfoot > tr > td {
+		display: none;
+	}
 
-    ${selector} > .p-datatable-tbody > tr > td {
-        display: flex;
-        width: 100%;
-        align-items: center;
-        justify-content: space-between;
-    }
+	${selector} > .p-datatable-tbody > tr > td {
+		display: flex;
+		width: 100%;
+		align-items: center;
+		justify-content: space-between;
+	}
 
-    ${selector} > .p-datatable-tbody > tr > td:not(:last-child) {
-        border: 0 none;
-    }
+	${selector} > .p-datatable-tbody > tr > td:not(:last-child) {
+		border: 0 none;
+	}
 
-    ${gridLinesSelector} > .p-datatable-tbody > tr > td:last-child {
-        border-top: 0;
-        border-right: 0;
-        border-left: 0;
-    }
+	${gridLinesSelector} > .p-datatable-tbody > tr > td:last-child {
+		border-top: 0;
+		border-right: 0;
+		border-left: 0;
+	}
 
-    ${selector} > .p-datatable-tbody > tr > td > .p-column-title {
-        display: block;
-    }
+	${selector} > .p-datatable-tbody > tr > td > .p-column-title {
+		display: block;
+	}
 }
 `;
 
@@ -1205,9 +1205,9 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 				const filterFunction = getColumnProp(col, 'filterFunction');
 				const dataType = getColumnProp(col, 'dataType');
 				const matchMode = getColumnProp(col, 'filterMatchMode')
-                    || ((context && context.filterMatchModeOptions[dataType]) || PrimeReact.filterMatchModeOptions[dataType]
-                    	? (context && context.filterMatchModeOptions[dataType][0]) || PrimeReact.filterMatchModeOptions[dataType][0]
-                    	: FilterMatchMode.STARTS_WITH);
+					|| ((context && context.filterMatchModeOptions[dataType]) || PrimeReact.filterMatchModeOptions[dataType]
+						? (context && context.filterMatchModeOptions[dataType][0]) || PrimeReact.filterMatchModeOptions[dataType][0]
+						: FilterMatchMode.STARTS_WITH);
 				const constraint = { value: null, matchMode };
 
 				if (filterFunction) {
@@ -1826,6 +1826,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 					pt={ptCallbacks.ptm('virtualScroller')}
 					__parentMetadata={{ parent: metaData }}
 					showSpacer={false}
+					// eslint-disable-next-line react/no-unstable-nested-components
 					contentTemplate={options => {
 						const ref = el => {
 							tableRef.current = el;

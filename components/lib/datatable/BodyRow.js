@@ -1,8 +1,8 @@
-import * as React from 'react';
-import { ColumnBase } from '../column/ColumnBase';
-import { useMergeProps } from '../hooks/Hooks';
-import { classNames, DomHandler, ObjectUtils } from '../utils/Utils';
-import { BodyCell } from './BodyCell';
+import React from 'react';
+import { useMergeProps } from 'primereact/hooks/hooks.esm.js';
+import { classNames, DomHandler, ObjectUtils } from 'primereact/utils/utils.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
+import { BodyCell } from './BodyCell.js';
 
 export const BodyRow = React.memo(props => {
 	const mergeProps = useMergeProps();

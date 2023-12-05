@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { ariaLabel } from '../api/Api';
-import { ColumnBase } from '../column/ColumnBase';
-import { useMergeProps } from '../hooks/Hooks';
-import { ChevronDownIcon } from '../icons/chevrondown';
-import { ChevronRightIcon } from '../icons/chevronright';
-import { Ripple } from '../ripple/Ripple';
-import { IconUtils } from '../utils/Utils';
+import { ariaLabel } from 'primereact/api/api.esm.js';
+import { useMergeProps } from 'primereact/hooks/hooks.esm.js';
+import { Ripple } from 'primereact/ripple/ripple.esm.js';
+import { IconUtils } from 'primereact/utils/utils.esm.js';
+import { ChevronDownIcon } from 'primereact/icons/chevrondown/index.esm.js';
+import { ChevronRightIcon } from 'primereact/icons/chevronright/index.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
 
 export const RowTogglerButton = React.memo(props => {
 	const mergeProps = useMergeProps();

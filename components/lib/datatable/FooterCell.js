@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { ColumnBase } from '../column/ColumnBase';
-import { useMergeProps } from '../hooks/Hooks';
-import { classNames, DomHandler, ObjectUtils } from '../utils/Utils';
+import { useMergeProps } from 'primereact/hooks/hooks.esm.js';
+import { classNames, DomHandler, ObjectUtils } from 'primereact/utils/utils.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
 
 export const FooterCell = React.memo(props => {
 	const [styleObjectState, setStyleObjectState] = React.useState({});

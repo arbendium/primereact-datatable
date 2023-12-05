@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { ariaLabel } from '../api/Locale';
-import { Checkbox } from '../checkbox/Checkbox';
-import { ColumnBase } from '../column/ColumnBase';
-import { useMergeProps } from '../hooks/Hooks';
-import { CheckIcon } from '../icons/check';
-import { IconUtils } from '../utils/Utils';
+import { ariaLabel } from 'primereact/api/api.esm.js';
+import { Checkbox } from 'primereact/checkbox/checkbox.esm.js';
+import { useMergeProps } from 'primereact/hooks/hooks.esm.js';
+import { CheckIcon } from 'primereact/icons/check/index.esm.js';
+import { IconUtils } from 'primereact/utils/utils.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
 
 export const HeaderCheckbox = React.memo(props => {
 	const mergeProps = useMergeProps();

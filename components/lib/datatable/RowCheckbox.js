@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Checkbox } from '../checkbox/Checkbox';
-import { ColumnBase } from '../column/ColumnBase';
-import { useMergeProps } from '../hooks/Hooks';
-import { CheckIcon } from '../icons/check';
-import { IconUtils } from '../utils/Utils';
+import { CheckIcon } from 'primereact/icons/check/index.esm.js';
+import { Checkbox } from 'primereact/checkbox/checkbox.esm.js';
+import { useMergeProps } from 'primereact/hooks/hooks.esm.js';
+import { IconUtils } from 'primereact/utils/utils.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
 
 export const RowCheckbox = React.memo(props => {
 	const mergeProps = useMergeProps();

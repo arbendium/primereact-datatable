@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { PrimeReactContext } from '../api/Api';
-import { useMergeProps } from '../hooks/Hooks';
-import { RowBase } from './RowBase';
+import { PrimeReactContext } from 'primereact/api/api.esm.js';
+import { useMergeProps } from 'primereact/hooks/hooks.esm.js';
+import { RowBase } from './RowBase.js';
 
 export function Row(inProps) {
 	const mergeProps = useMergeProps();

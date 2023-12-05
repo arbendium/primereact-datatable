@@ -1,15 +1,15 @@
 import * as React from 'react';
-import { ColumnBase } from '../column/ColumnBase';
-import { useMergeProps, usePrevious } from '../hooks/Hooks';
-import { SortAltIcon } from '../icons/sortalt';
-import { SortAmountDownIcon } from '../icons/sortamountdown';
-import { SortAmountUpAltIcon } from '../icons/sortamountupalt';
-import { Tooltip } from '../tooltip/Tooltip';
+import { useMergeProps, usePrevious } from 'primereact/hooks/hooks.esm.js';
+import { SortAltIcon } from 'primereact/icons/sortalt/index.esm.js';
+import { SortAmountDownIcon } from 'primereact/icons/sortamountdown/index.esm.js';
+import { SortAmountUpAltIcon } from 'primereact/icons/sortamountupalt/index.esm.js';
+import { Tooltip } from 'primereact/tooltip/tooltip.esm.js';
 import {
 	DomHandler, IconUtils, ObjectUtils, classNames
-} from '../utils/Utils';
-import { ColumnFilter } from './ColumnFilter';
-import { HeaderCheckbox } from './HeaderCheckbox';
+} from 'primereact/utils/utils.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
+import { ColumnFilter } from './ColumnFilter.js';
+import { HeaderCheckbox } from './HeaderCheckbox.js';
 
 export const HeaderCell = React.memo(props => {
 	const [styleObjectState, setStyleObjectState] = React.useState({});
@@ -167,7 +167,7 @@ export const HeaderCell = React.memo(props => {
 	};
 
 	const onKeyDown = event => {
-		if ((event.code == 'Enter' || event.code === 'NumpadEnter' || event.code == 'Space') && event.currentTarget === elementRef.current && DomHandler.getAttribute(event.currentTarget, 'data-p-sortable-column') === 'true') {
+		if ((event.code === 'Enter' || event.code === 'NumpadEnter' || event.code === 'Space') && event.currentTarget === elementRef.current && DomHandler.getAttribute(event.currentTarget, 'data-p-sortable-column') === 'true') {
 			onClick(event);
 
 			event.preventDefault();

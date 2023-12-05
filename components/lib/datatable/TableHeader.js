@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { ColumnBase } from '../column/ColumnBase';
-import { ColumnGroupBase } from '../columngroup/ColumnGroupBase';
-import { useMergeProps, useMountEffect } from '../hooks/Hooks';
-import { RowBase } from '../row/RowBase';
-import { classNames } from '../utils/Utils';
-import { ColumnFilter } from './ColumnFilter';
-import { HeaderCell } from './HeaderCell';
-import { HeaderCheckbox } from './HeaderCheckbox';
+import { useMergeProps, useMountEffect } from 'primereact/hooks/hooks.esm.js';
+import { classNames } from 'primereact/utils/utils.esm.js';
+import { ColumnGroupBase } from '../columngroup/ColumnGroupBase.js';
+import { ColumnBase } from '../column/ColumnBase.js';
+import { RowBase } from '../row/RowBase.js';
+import { ColumnFilter } from './ColumnFilter.js';
+import { HeaderCell } from './HeaderCell.js';
+import { HeaderCheckbox } from './HeaderCheckbox.js';
 
 export const TableHeader = React.memo(props => {
 	const [sortableDisabledFieldsState, setSortableDisabledFieldsState] = React.useState([]);

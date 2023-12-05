@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { ColumnBase } from '../column/ColumnBase';
-import { ColumnGroupBase } from '../columngroup/ColumnGroupBase';
-import { useMergeProps } from '../hooks/Hooks';
-import { RowBase } from '../row/RowBase';
-import { FooterCell } from './FooterCell';
+import { useMergeProps } from 'primereact/hooks/hooks.esm.js';
+import { ColumnGroupBase } from '../columngroup/ColumnGroupBase.js';
+import { ColumnBase } from '../column/ColumnBase.js';
+import { RowBase } from '../row/RowBase.js';
+import { FooterCell } from './FooterCell.js';
 
 export const TableFooter = React.memo(props => {
 	const { ptm, ptmo, cx } = props.ptCallbacks;

@@ -1,22 +1,22 @@
 import * as React from 'react';
-import { ariaLabel } from '../api/Api';
-import { ColumnBase } from '../column/ColumnBase';
+import { ariaLabel } from 'primereact/api/api.esm.js';
 import {
 	useEventListener, useMergeProps, useUnmountEffect, useUpdateEffect
-} from '../hooks/Hooks';
-import { BarsIcon } from '../icons/bars';
-import { CheckIcon } from '../icons/check';
-import { ChevronDownIcon } from '../icons/chevrondown';
-import { ChevronRightIcon } from '../icons/chevronright';
-import { PencilIcon } from '../icons/pencil';
-import { TimesIcon } from '../icons/times';
-import { OverlayService } from '../overlayservice/OverlayService';
-import { Ripple } from '../ripple/Ripple';
+} from 'primereact/hooks/hooks.esm.js';
+import { BarsIcon } from 'primereact/icons/bars/index.esm.js';
+import { CheckIcon } from 'primereact/icons/check/index.esm.js';
+import { ChevronDownIcon } from 'primereact/icons/chevrondown/index.esm.js';
+import { ChevronRightIcon } from 'primereact/icons/chevronright/index.esm.js';
+import { PencilIcon } from 'primereact/icons/pencil/index.esm.js';
+import { TimesIcon } from 'primereact/icons/times/index.esm.js';
+import { OverlayService } from 'primereact/overlayservice/overlayservice.esm.js';
+import { Ripple } from 'primereact/ripple/ripple.esm.js';
 import {
 	DomHandler, IconUtils, ObjectUtils, classNames
-} from '../utils/Utils';
-import { RowCheckbox } from './RowCheckbox';
-import { RowRadioButton } from './RowRadioButton';
+} from 'primereact/utils/utils.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
+import { RowCheckbox } from './RowCheckbox.js';
+import { RowRadioButton } from './RowRadioButton.js';
 
 export const BodyCell = React.memo(props => {
 	const mergeProps = useMergeProps();
@@ -357,7 +357,7 @@ export const BodyCell = React.memo(props => {
 			const { target, currentTarget: cell } = event;
 
 			switch (event.code) {
-			case 'ArrowLeft':
+			case 'ArrowLeft': {
 				const prevCell = findPrevSelectableCell(cell);
 
 				if (prevCell) {
@@ -367,8 +367,8 @@ export const BodyCell = React.memo(props => {
 
 				event.preventDefault();
 				break;
-
-			case 'ArrowRight':
+			}
+			case 'ArrowRight': {
 				const nextCell = findNextSelectableCell(cell);
 
 				if (nextCell) {
@@ -378,8 +378,8 @@ export const BodyCell = React.memo(props => {
 
 				event.preventDefault();
 				break;
-
-			case 'ArrowUp':
+			}
+			case 'ArrowUp': {
 				const upCell = findUpSelectableCell(cell);
 
 				if (upCell) {
@@ -389,8 +389,8 @@ export const BodyCell = React.memo(props => {
 
 				event.preventDefault();
 				break;
-
-			case 'ArrowDown':
+			}
+			case 'ArrowDown': {
 				const downCell = findDownSelectableCell(cell);
 
 				if (downCell) {
@@ -400,7 +400,7 @@ export const BodyCell = React.memo(props => {
 
 				event.preventDefault();
 				break;
-
+			}
 			case 'Enter':
 			case 'NumpadEnter':
 				if (event.shiftKey || event.ctrlKey) {
@@ -514,7 +514,6 @@ export const BodyCell = React.memo(props => {
 
 			props.onEditingMetaChange(params);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [editingState]);
 
 	useUnmountEffect(() => {
@@ -791,13 +790,11 @@ export const BodyCell = React.memo(props => {
 			);
 
 			const editorKeyHelperLabelProps = mergeProps(getColumnPTOptions('editorKeyHelper'));
-			/* eslint-disable */
-            editorKeyHelper = (
-                <a ref={keyHelperRef} {...editorKeyHelperProps}>
-                    <span {...editorKeyHelperLabelProps}></span>
-                </a>
-            );
-            /* eslint-enable */
+			editorKeyHelper = (
+				<a ref={keyHelperRef} {...editorKeyHelperProps}>
+					<span {...editorKeyHelperLabelProps} />
+				</a>
+			);
 		}
 
 		const bodyCellProps = mergeProps(

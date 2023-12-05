@@ -1,27 +1,26 @@
 import * as React from 'react';
 import PrimeReact, {
-	FilterMatchMode, FilterOperator, PrimeReactContext, localeOption
-} from '../api/Api';
-import { ariaLabel } from '../api/Locale';
-import { Button } from '../button/Button';
-import { ColumnBase } from '../column/ColumnBase';
-import { CSSTransition } from '../csstransition/CSSTransition';
-import { Dropdown } from '../dropdown/Dropdown';
-import FocusTrap from '../focustrap/FocusTrap';
+	FilterMatchMode, FilterOperator, PrimeReactContext, ariaLabel, localeOption
+} from 'primereact/api/api.esm.js';
+import { Button } from 'primereact/button/button.esm.js';
+import { CSSTransition } from 'primereact/csstransition/csstransition.esm.js';
+import { Dropdown } from 'primereact/dropdown/dropdown.esm.js';
+import { FocusTrap } from 'primereact/focustrap/focustrap.esm.js';
 import {
 	useMergeProps, useMountEffect, useOverlayListener, useUnmountEffect, useUpdateEffect
-} from '../hooks/Hooks';
-import { FilterIcon } from '../icons/filter';
-import { FilterSlashIcon } from '../icons/filterslash';
-import { PlusIcon } from '../icons/plus';
-import { TrashIcon } from '../icons/trash';
-import { InputText } from '../inputtext/InputText';
-import { OverlayService } from '../overlayservice/OverlayService';
-import { Portal } from '../portal/Portal';
-import { Ripple } from '../ripple/Ripple';
+} from 'primereact/hooks/hooks.esm.js';
+import { FilterIcon } from 'primereact/icons/filter/index.esm.js';
+import { FilterSlashIcon } from 'primereact/icons/filterslash/index.esm.js';
+import { PlusIcon } from 'primereact/icons/plus/index.esm.js';
+import { TrashIcon } from 'primereact/icons/trash/index.esm.js';
+import { InputText } from 'primereact/inputtext/inputtext.esm.js';
+import { OverlayService } from 'primereact/overlayservice/overlayservice.esm.js';
+import { Portal } from 'primereact/portal/portal.esm.js';
+import { Ripple } from 'primereact/ripple/ripple.esm.js';
 import {
 	DomHandler, IconUtils, ObjectUtils, UniqueComponentId, ZIndexUtils
-} from '../utils/Utils';
+} from 'primereact/utils/utils.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
 
 export const ColumnFilter = React.memo(props => {
 	const [overlayVisibleState, setOverlayVisibleState] = React.useState(false);
@@ -218,7 +217,7 @@ export const ColumnFilter = React.memo(props => {
 		}
 	};
 
-	const onInputKeydown = (event, _index) => {
+	const onInputKeydown = event => {
 		if (event.key === 'Enter') {
 			if (!getColumnProp('showApplyButton') || props.display === 'menu') {
 				applyFilter();
@@ -242,7 +241,7 @@ export const ColumnFilter = React.memo(props => {
 		const item = event.target;
 
 		switch (event.key) {
-		case 'ArrowDown':
+		case 'ArrowDown': {
 			const nextItem = findNextItem(item);
 
 			if (nextItem) {
@@ -253,8 +252,8 @@ export const ColumnFilter = React.memo(props => {
 
 			event.preventDefault();
 			break;
-
-		case 'ArrowUp':
+		}
+		case 'ArrowUp': {
 			const prevItem = findPrevItem(item);
 
 			if (prevItem) {
@@ -265,7 +264,7 @@ export const ColumnFilter = React.memo(props => {
 
 			event.preventDefault();
 			break;
-
+		}
 		case 'Enter':
 			clear ? clearFilter() : onRowMatchModeChange(matchMode.value);
 
@@ -409,8 +408,6 @@ export const ColumnFilter = React.memo(props => {
 		{ label: localeOption('matchAll'), value: FilterOperator.AND },
 		{ label: localeOption('matchAny'), value: FilterOperator.OR }
 	];
-
-	const filterLabel = () => localeOption('filter');
 
 	const noFilterLabel = () => localeOption('noFilter');
 
