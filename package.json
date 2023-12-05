@@ -1,0 +1,30 @@
+{
+  "type": "module",
+  "name": "@arbendium/primereact-datatable",
+  "version": "0.0.0",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "lint": "eslint *.js components"
+  },
+  "author": "Keijo Kapp <keijo.kapp@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@arbendium/eslint-config": "^0.1.2",
+    "@babel/core": "^7.23.5",
+    "@babel/preset-react": "^7.23.3",
+    "@rollup/plugin-alias": "^5.1.0",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.5",
+    "fs-extra": "^11.2.0",
+    "globals": "^13.23.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-terser": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=21"
+  }
+}
