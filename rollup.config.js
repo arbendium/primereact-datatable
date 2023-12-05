@@ -169,7 +169,7 @@ function addEntry(name, input, output, isComponent = true) {
 
 	const onwarn = warning => {
 		if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
-
+			// pass
 		}
 	};
 

@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { ariaLabel } from '../api/Api';
-import { Ripple } from '../ripple/Ripple';
-import { IconUtils, mergeProps } from '../utils/Utils';
-import { ChevronDownIcon } from '../icons/chevrondown';
-import { ChevronRightIcon } from '../icons/chevronright';
-import { ColumnBase } from '../column/ColumnBase';
+import { ariaLabel } from 'primereact/api/api.esm.js';
+import { Ripple } from 'primereact/ripple/ripple.esm.js';
+import { IconUtils, mergeProps } from 'primereact/utils/utils.esm.js';
+import { ChevronDownIcon } from 'primereact/icons/chevrondown/index.esm.js';
+import { ChevronRightIcon } from 'primereact/icons/chevronright/index.esm.js';
+import { ColumnBase } from '../column/ColumnBase.js';
 
 export const RowTogglerButton = React.memo(props => {
 	const { ptm, ptmo, cx } = props.ptCallbacks;

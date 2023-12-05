@@ -1,5 +1,5 @@
-import { ComponentBase } from '../componentbase/ComponentBase';
-import { ObjectUtils } from '../utils/Utils';
+import { ComponentBase } from 'primereact/componentbase/componentbase.esm.js';
+import { ObjectUtils } from 'primereact/utils/utils.esm.js';
 
 export const ColumnBase = ComponentBase.extend({
 	defaultProps: {

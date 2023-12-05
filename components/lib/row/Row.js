@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { RowBase } from './RowBase';
-import { mergeProps } from '../utils/Utils';
-import { PrimeReactContext } from '../api/Api';
+import { PrimeReactContext } from 'primereact/api/api.esm.js';
+import { mergeProps } from 'primereact/utils/utils.esm.js';
+import { RowBase } from './RowBase.js';
 
 export function Row(inProps) {
 	const context = React.useContext(PrimeReactContext);

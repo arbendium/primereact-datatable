@@ -17,6 +17,7 @@ export default [
 			'max-len': 'off',
 			'no-multi-assign': 'off',
 			'no-nested-ternary': 'off',
+			'no-underscore-dangle': 'off',
 			'no-unused-expressions': 'off',
 			'react/button-has-type': 'off',
 			'react/jsx-props-no-spreading': 'off'
