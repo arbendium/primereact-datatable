@@ -1159,7 +1159,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		}
 
 		return filteredValue;
-	}, [props.globalFilter, props.globalFilterFields, columns, executeLocalFilter, props.filterLocale, props.value]);
+	}, [props.globalFilter, props.globalFilterFields, columns, executeLocalFilter, props.filterLocale, props.globalFilterMatchMode, props.value]);
 
 	const cloneFilters = filters => {
 		filters = filters || props.filters;
