@@ -20,6 +20,30 @@ import { TableBody } from './TableBody.js';
 import { TableFooter } from './TableFooter.js';
 import { TableHeader } from './TableHeader.js';
 
+const emptyArray = [];
+const getColumnProp = (column, name) => ColumnBase.getCProp(column, name);
+
+const getActiveFilters = filters => {
+	const removeEmptyFilters = ([key, value]) => {
+		if (value.constraints) {
+			const filteredConstraints = value.constraints.filter(constraint => constraint.value !== null);
+
+			if (filteredConstraints.length > 0) {
+				return [key, { ...value, constraints: filteredConstraints }];
+			}
+		} else if (value.value !== null) {
+			return [key, value];
+		}
+
+		return undefined;
+	};
+
+	const filterValidEntries = entry => entry !== undefined;
+	const entries = Object.entries(filters).map(removeEmptyFilters).filter(filterValidEntries);
+
+	return Object.fromEntries(entries);
+};
+
 export const DataTable = React.forwardRef((inProps, ref) => {
 	const context = React.useContext(PrimeReactContext);
 	const mergeProps = useMergeProps();
@@ -148,21 +172,17 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 
 	const isEquals = (data1, data2) => props.compareSelectionBy === 'equals' ? data1 === data2 : ObjectUtils.equals(data1, data2, props.dataKey);
 
-	const hasFilter = () => ObjectUtils.isNotEmpty(getFilters()) || props.globalFilter;
+	const first = props.onPage ? props.first : firstState;
 
-	const getFirst = React.useCallback(() => props.onPage ? props.first : firstState, [props.onPage, props.first, firstState]);
+	const rows = props.onPage ? props.rows : rowsState;
 
-	const getRows = React.useCallback(() => props.onPage ? props.rows : rowsState, [props.onPage, props.rows, rowsState]);
+	const sortField = props.onSort ? props.sortField : sortFieldState;
 
-	const getSortField = React.useCallback(() => props.onSort ? props.sortField : sortFieldState, [props.onSort, props.sortField, sortFieldState]);
+	const sortOrder = props.onSort ? props.sortOrder : sortOrderState;
 
-	const getSortOrder = React.useCallback(() => props.onSort ? props.sortOrder : sortOrderState, [props.onSort, props.sortOrder, sortOrderState]);
+	const multiSortMeta = (props.onSort ? props.multiSortMeta : multiSortMetaState) || emptyArray;
 
-	const getMultiSortMeta = React.useCallback(() => (props.onSort ? props.multiSortMeta : multiSortMetaState) || [], [props.onSort, props.multiSortMeta, multiSortMetaState]);
-
-	const getFilters = React.useCallback(() => props.onFilter ? props.filters : filtersState, [props.onFilter, props.filters, filtersState]);
-
-	const getColumnProp = React.useCallback((column, name) => ColumnBase.getCProp(column, name), []);
+	const filters = props.onFilter ? props.filters : filtersState;
 
 	const unorderedColumns = React.useMemo(() => React.Children.toArray(props.children), [props.children]);
 
@@ -206,25 +226,21 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		const state = {};
 
 		if (props.paginator) {
-			state.first = getFirst();
-			state.rows = getRows();
+			state.first = first;
+			state.rows = rows;
 		}
-
-		const sortField = getSortField();
 
 		if (sortField) {
 			state.sortField = sortField;
-			state.sortOrder = getSortOrder();
+			state.sortOrder = sortOrder;
 		}
-
-		const multiSortMeta = getMultiSortMeta();
 
 		if (multiSortMeta) {
 			state.multiSortMeta = multiSortMeta;
 		}
 
-		if (hasFilter()) {
-			state.filters = getFilters();
+		if (ObjectUtils.isNotEmpty(filters) || props.globalFilter) {
+			state.filters = filters;
 		}
 
 		if (props.resizableColumns) {
@@ -899,47 +915,47 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		clearEditingMetaData();
 
 		const { originalEvent: event, column, sortableDisabledFields } = e;
-		let sortField = getColumnProp(column, 'sortField') || getColumnProp(column, 'field');
-		let sortOrder = props.defaultSortOrder;
-		let multiSortMeta;
+		let localSortField = getColumnProp(column, 'sortField') || getColumnProp(column, 'field');
+		let localSortOrder = props.defaultSortOrder;
+		let localMultiSortMeta;
 		let eventMeta;
 
 		columnSortable.current = getColumnProp(column, 'sortable');
 		columnSortFunction.current = getColumnProp(column, 'sortFunction');
-		columnField.current = sortField;
+		columnField.current = localSortField;
 
 		if (props.sortMode === 'multiple') {
 			const metaKey = event.metaKey || event.ctrlKey;
 
-			multiSortMeta = [...getMultiSortMeta()];
+			localMultiSortMeta = [...multiSortMeta];
 
-			const sortMeta = multiSortMeta.find(sortMeta => sortMeta.field === sortField);
+			const sortMeta = localMultiSortMeta.find(sortMeta => sortMeta.field === localSortField);
 
-			sortOrder = sortMeta ? getCalculatedSortOrder(sortMeta.order) : sortOrder;
+			localSortOrder = sortMeta ? getCalculatedSortOrder(sortMeta.order) : localSortOrder;
 
-			const newMetaData = { field: sortField, order: sortOrder };
+			const newMetaData = { field: localSortField, order: localSortOrder };
 
-			if (sortOrder) {
-				multiSortMeta = metaKey ? multiSortMeta : multiSortMeta.filter(meta => sortableDisabledFields.some(field => field === meta.field));
+			if (localSortOrder) {
+				localMultiSortMeta = metaKey ? localMultiSortMeta : localMultiSortMeta.filter(meta => sortableDisabledFields.some(field => field === meta.field));
 
-				addSortMeta(newMetaData, multiSortMeta);
+				addSortMeta(newMetaData, localMultiSortMeta);
 			} else if (props.removableSort) {
-				removeSortMeta(newMetaData, multiSortMeta);
+				removeSortMeta(newMetaData, localMultiSortMeta);
 			}
 
 			eventMeta = {
-				multiSortMeta
+				multiSortMeta: localMultiSortMeta
 			};
 		} else {
-			sortOrder = getSortField() === sortField ? getCalculatedSortOrder(getSortOrder()) : sortOrder;
+			localSortOrder = sortField === localSortField ? getCalculatedSortOrder(sortOrder) : localSortOrder;
 
 			if (props.removableSort) {
-				sortField = sortOrder ? sortField : null;
+				localSortField = localSortOrder ? localSortField : null;
 			}
 
 			eventMeta = {
-				sortField,
-				sortOrder
+				sortField: localSortField,
+				sortOrder: localSortOrder
 			};
 		}
 
@@ -955,9 +971,9 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		if (props.onValueChange) {
 			props.onValueChange(
 				processedData({
-					sortField,
-					sortOrder,
-					multiSortMeta
+					sortField: localSortField,
+					sortOrder: localSortOrder,
+					multiSortMeta: localMultiSortMeta
 				})
 			);
 		}
@@ -1094,27 +1110,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		}, props.filterDelay);
 	};
 
-	const getActiveFilters = React.useCallback(filters => {
-		const removeEmptyFilters = ([key, value]) => {
-			if (value.constraints) {
-				const filteredConstraints = value.constraints.filter(constraint => constraint.value !== null);
-
-				if (filteredConstraints.length > 0) {
-					return [key, { ...value, constraints: filteredConstraints }];
-				}
-			} else if (value.value !== null) {
-				return [key, value];
-			}
-
-			return undefined;
-		};
-
-		const filterValidEntries = entry => entry !== undefined;
-		const entries = Object.entries(filters).map(removeEmptyFilters).filter(filterValidEntries);
-
-		return Object.fromEntries(entries);
-	}, []);
-
 	const executeLocalFilter = React.useCallback((field, rowData, filterMeta, index) => {
 		const filterValue = filterMeta.value;
 		const filterMatchMode = filterMeta.matchMode === 'custom' ? `custom_${field}` : filterMeta.matchMode || FilterMatchMode.STARTS_WITH;
@@ -1207,7 +1202,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		}
 
 		return filteredValue;
-	}, [props.globalFilter, props.globalFilterFields, columns, getColumnProp, executeLocalFilter, props.filterLocale, props.globalFilterMatchMode, props.value]);
+	}, [props.globalFilter, props.globalFilterFields, columns, executeLocalFilter, props.filterLocale, props.globalFilterMatchMode, props.value]);
 
 	const cloneFilters = filters => {
 		filters = filters || props.filters;
@@ -1385,12 +1380,12 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 	};
 
 	const createEvent = event => ({
-		first: getFirst(),
-		rows: getRows(),
-		sortField: getSortField(),
-		sortOrder: getSortOrder(),
-		multiSortMeta: getMultiSortMeta(),
-		filters: getFilters(),
+		first,
+		rows,
+		sortField,
+		sortOrder,
+		multiSortMeta,
+		filters,
 		...event
 	});
 
@@ -1399,26 +1394,26 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 
 		if (!props.lazy) {
 			if (data && data.length) {
-				const filters = (localState && localState.filters) || getFilters();
-				const sortField = (localState && localState.sortField) || getSortField();
-				const sortOrder = (localState && localState.sortOrder) || getSortOrder();
-				const multiSortMeta = (localState && localState.multiSortMeta) || getMultiSortMeta();
-				const sortColumn = columns.find(col => getColumnProp(col, 'field') === sortField);
+				const localFilters = localState?.filters ?? filters;
+				const localSortField = localState?.sortField ?? sortField;
+				const localSortOrder = localState?.sortOrder ?? sortOrder;
+				const localMultiSortMeta = localState?.multiSortMeta ?? multiSortMeta;
+				const sortColumn = columns.find(col => getColumnProp(col, 'field') === localSortField);
 
 				if (sortColumn) {
 					columnSortable.current = getColumnProp(sortColumn, 'sortable');
 					columnSortFunction.current = getColumnProp(sortColumn, 'sortFunction');
 				}
 
-				if (ObjectUtils.isNotEmpty(filters) || props.globalFilter) {
-					data = filterLocal(data, filters);
+				if (ObjectUtils.isNotEmpty(localFilters) || props.globalFilter) {
+					data = filterLocal(data, localFilters);
 				}
 
-				if (sortField || ObjectUtils.isNotEmpty(multiSortMeta)) {
+				if (localSortField || ObjectUtils.isNotEmpty(localMultiSortMeta)) {
 					if (props.sortMode === 'single') {
-						data = sortSingle(data, sortField, sortOrder);
+						data = sortSingle(data, localSortField, localSortOrder);
 					} else if (props.sortMode === 'multiple') {
-						data = sortMultiple(data, multiSortMeta);
+						data = sortMultiple(data, localMultiSortMeta);
 					}
 				}
 			}
@@ -1428,12 +1423,11 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 	}, [
 		props.value,
 		props.lazy,
-		getFilters,
-		getSortField,
-		getSortOrder,
-		getMultiSortMeta,
+		filters,
+		sortField,
+		sortOrder,
+		multiSortMeta,
 		columns,
-		getColumnProp,
 		props.globalFilter,
 		filterLocal,
 		props.sortMode,
@@ -1443,13 +1437,13 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 
 	const dataToRender = React.useCallback(data => {
 		if (data && props.paginator) {
-			const first = props.lazy ? 0 : getFirst();
+			const localFirst = props.lazy ? 0 : first;
 
-			return data.slice(first, first + getRows());
+			return data.slice(localFirst, localFirst + rows);
 		}
 
 		return data;
-	}, [props.paginator, props.lazy, getFirst, getRows]);
+	}, [props.paginator, props.lazy, first, rows]);
 
 	useMountEffect(() => {
 		if (elementRef.current) {
@@ -1584,12 +1578,10 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 			return null;
 		}
 
-		const sortField = getSortField();
-		const sortOrder = getSortOrder();
-		const multiSortMeta = [...getMultiSortMeta()];
+		const localMultiSortMeta = [...multiSortMeta];
 		const groupRowSortField = getGroupRowSortField();
 		const filters = d_filtersState;
-		const filtersStore = (!props.onFilter && props.filters) || getFilters();
+		const filtersStore = (!props.onFilter && props.filters) || filters;
 		const { items: processedData, props: virtualScrollerProps, columns } = options;
 		const data = _isVirtualScrollerDisabled || virtualScrollerProps.lazy ? processedData : virtualScrollerProps.items;
 
@@ -1610,7 +1602,7 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 				sortField={sortField}
 				sortIcon={props.sortIcon}
 				sortOrder={sortOrder}
-				multiSortMeta={multiSortMeta}
+				multiSortMeta={localMultiSortMeta}
 				groupRowsBy={props.groupRowsBy}
 				groupRowSortField={groupRowSortField}
 				onSortChange={onSortChange}
@@ -1639,7 +1631,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 	};
 
 	const createTableBody = (options, selectionModeInColumn, empty, isVirtualScrollerDisabled) => {
-		const first = getFirst();
 		const {
 			rows, columns, contentRef, style, className, spacerStyle, itemSize
 		} = options;
@@ -1920,8 +1911,8 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 
 	const createPaginator = (position, totalRecords) => (
 		<Paginator
-			first={getFirst()}
-			rows={getRows()}
+			first={first}
+			rows={rows}
 			pageLinkSize={props.pageLinkSize}
 			className={classNames(props.paginatorClassName, ptCallbacks.cx('paginator', { position }))}
 			onPageChange={onPageChange}
