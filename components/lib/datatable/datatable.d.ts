@@ -1196,7 +1196,7 @@ interface DataTableBaseProps<TValue extends DataTableValueArray> extends Omit<Re
     /**
      * An array of SortMeta objects to sort the data by default in multiple sort mode.
      */
-    multiSortMeta?: DataTableSortMeta[] | null | undefined;
+    multiSortMeta?: DataTableSortMeta[] | undefined;
     /**
      * Number of page links to display.
      * @defaultValue 5
@@ -1484,12 +1484,12 @@ interface DataTableBaseProps<TValue extends DataTableValueArray> extends Omit<Re
      * Callback to invoke on filtering.
      * @param {DataTableStateEvent} event - Custom state event.
      */
-    onFilter?(event: DataTableStateEvent): void;
+    onFilter(event: DataTableStateEvent): void;
     /**
      * Callback to invoke on pagination.
      * @param {DataTableStateEvent} event - Custom state event.
      */
-    onPage?(event: DataTableStateEvent): void;
+    onPage(event: DataTableStateEvent): void;
     /**
      * Callback to invoke when a row is clicked.
      * @param {DataTableRowClickEvent} event - Custom row click event.
@@ -1584,7 +1584,7 @@ interface DataTableBaseProps<TValue extends DataTableValueArray> extends Omit<Re
      * Callback to invoke on sort.
      * @param {DataTableStateEvent} event - Custom state event.
      */
-    onSort?(event: DataTableStateEvent): void;
+    onSort(event: DataTableStateEvent): void;
     /**
      * Callback to invoke table state is restored.
      * @param {object} state - Table state.
