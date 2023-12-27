@@ -4754,31 +4754,17 @@ const getActiveFilters = filters => {
 function DataTable(inProps) {
   const context = React.useContext(PrimeReactContext);
   const props = React.useMemo(() => DataTableBase.getProps(inProps, context), [inProps, context]);
-  const [firstState, setFirstState] = React.useState(props.first);
-  const [rowsState, setRowsState] = React.useState(props.rows);
-  const [sortFieldState, setSortFieldState] = React.useState(props.sortField);
-  const [sortOrderState, setSortOrderState] = React.useState(props.sortOrder);
-  const [multiSortMetaState, setMultiSortMetaState] = React.useState(props.multiSortMeta);
-  const [filtersState, setFiltersState] = React.useState(props.filters);
   const [columnOrderState, setColumnOrderState] = React.useState([]);
   const [groupRowsSortMetaState, setGroupRowsSortMetaState] = React.useState(null);
   const [editingMetaState, setEditingMetaState] = React.useState({});
-  const [d_rowsState, setD_rowsState] = React.useState(props.rows);
   const [d_filtersState, setD_filtersState] = React.useState({});
   const [metaData, ptCallbacks] = React.useMemo(() => {
     const metaData = {
       props,
       state: new Proxy({
-        // first: firstState,
-        // rows: rowsState,
-        // sortField: sortFieldState,
-        // sortOrder: sortOrderState,
-        // multiSortMeta: multiSortMetaState,
-        // filters: filtersState,
         // columnOrder: columnOrderState,
         // groupRowsSortMeta: groupRowsSortMetaState,
         // editingMeta: editingMetaState,
-        // d_rows: d_rowsState,
         // d_filters: d_filtersState
       }, {
         get(target, prop, receiver) {
@@ -4794,16 +4780,9 @@ function DataTable(inProps) {
     const ptCallbacks = DataTableBase.setMetaData(metaData);
     return [metaData, ptCallbacks];
   }, [props,
-  // firstState,
-  // rowsState,
-  // sortFieldState,
-  // sortOrderState,
-  // multiSortMetaState,
-  // filtersState,
   // columnOrderState,
   // groupRowsSortMetaState,
   // editingMetaState,
-  // d_rowsState,
   // d_filtersState,
   props.scrollable]);
   useHandleStyle(DataTableBase.css.styles, ptCallbacks.isUnstyled, {
@@ -4835,10 +4814,6 @@ function DataTable(inProps) {
   const columnSortFunction = React.useRef(null);
   const columnField = React.useRef(null);
   const filterTimeout = React.useRef(null);
-  if (props.rows !== d_rowsState && !props.onPage) {
-    setRowsState(props.rows);
-    setD_rowsState(props.rows);
-  }
   const [bindDocumentMouseMoveListener, unbindDocumentMouseMoveListener] = useEventListener({
     type: 'mousemove',
     listener: event => {
@@ -4859,12 +4834,14 @@ function DataTable(inProps) {
   const isCustomStateStorage = () => props.stateStorage === 'custom';
   const isStateful = () => props.stateKey != null || isCustomStateStorage();
   const isEquals = (data1, data2) => props.compareSelectionBy === 'equals' ? data1 === data2 : ObjectUtils.equals(data1, data2, props.dataKey);
-  const first = props.onPage ? props.first : firstState;
-  const rows = props.onPage ? props.rows : rowsState;
-  const sortField = props.onSort ? props.sortField : sortFieldState;
-  const sortOrder = props.onSort ? props.sortOrder : sortOrderState;
-  const multiSortMeta = (props.onSort ? props.multiSortMeta : multiSortMetaState) || emptyArray;
-  const filters = props.onFilter ? props.filters : filtersState;
+  const {
+    filters,
+    first,
+    multiSortMeta = emptyArray,
+    rows,
+    sortField,
+    sortOrder
+  } = props;
   const unorderedColumns = React.useMemo(() => React.Children.toArray(props.children), [props.children]);
   const findColumnByKey = React.useCallback((columns, key) => ObjectUtils.isNotEmpty(columns) ? columns.find(col => getColumnProp(col, 'columnKey') === key || getColumnProp(col, 'field') === key) : null, []);
   const columns = React.useMemo(() => {
@@ -4955,53 +4932,36 @@ function DataTable(inProps) {
   const _restoreState = (restoredState = {}) => {
     if (ObjectUtils.isNotEmpty(restoredState)) {
       if (props.paginator) {
-        if (props.onPage) {
-          const getOnPageParams = (first, rows) => {
-            const totalRecords = getTotalRecords(processedData());
-            const pageCount = Math.ceil(totalRecords / rows) || 1;
-            const page = Math.floor(first / rows);
-            return {
-              first,
-              rows,
-              page,
-              pageCount
-            };
-          };
-          props.onPage(createEvent(getOnPageParams(restoredState.first, restoredState.rows)));
-        } else {
-          setFirstState(restoredState.first);
-          setRowsState(restoredState.rows);
-        }
+        const {
+          first,
+          rows
+        } = restoredState;
+        const totalRecords = getTotalRecords(processedData());
+        const pageCount = Math.ceil(totalRecords / rows) || 1;
+        const page = Math.floor(first / rows);
+        props.onPage(createEvent({
+          first,
+          page,
+          pageCount,
+          rows
+        }));
       }
       if (restoredState.sortField) {
-        if (props.onSort) {
-          props.onSort(createEvent({
-            sortField: restoredState.sortField,
-            sortOrder: restoredState.sortOrder
-          }));
-        } else {
-          setSortFieldState(restoredState.sortField);
-          setSortOrderState(restoredState.sortOrder);
-        }
+        props.onSort(createEvent({
+          sortField: restoredState.sortField,
+          sortOrder: restoredState.sortOrder
+        }));
       }
       if (restoredState.multiSortMeta) {
-        if (props.onSort) {
-          props.onSort(createEvent({
-            multiSortMeta: restoredState.multiSortMeta
-          }));
-        } else {
-          setMultiSortMetaState(restoredState.multiSortMeta);
-        }
+        props.onSort(createEvent({
+          multiSortMeta: restoredState.multiSortMeta
+        }));
       }
       if (restoredState.filters) {
         setD_filtersState(cloneFilters(restoredState.filters));
-        if (props.onFilter) {
-          props.onFilter(createEvent({
-            filters: restoredState.filters
-          }));
-        } else {
-          setFiltersState(cloneFilters(restoredState.filters));
-        }
+        props.onFilter(createEvent({
+          filters: restoredState.filters
+        }));
       }
       if (props.resizableColumns) {
         columnWidthsState.current = restoredState.columnWidths;
@@ -5433,12 +5393,7 @@ function DataTable(inProps) {
   };
   const onPageChange = e => {
     clearEditingMetaData();
-    if (props.onPage) {
-      props.onPage(createEvent(e));
-    } else {
-      setFirstState(e.first);
-      setRowsState(e.rows);
-    }
+    props.onPage(createEvent(e));
   };
   const onSortChange = e => {
     clearEditingMetaData();
@@ -5482,14 +5437,7 @@ function DataTable(inProps) {
         sortOrder: localSortOrder
       };
     }
-    if (props.onSort) {
-      props.onSort(createEvent(eventMeta));
-    } else {
-      setFirstState(0);
-      setSortFieldState(eventMeta.sortField);
-      setSortOrderState(eventMeta.sortOrder);
-      setMultiSortMetaState(eventMeta.multiSortMeta);
-    }
+    props.onSort(createEvent(eventMeta));
   };
   const getCalculatedSortOrder = currentOrder => props.removableSort ? props.defaultSortOrder === currentOrder ? currentOrder * -1 : 0 : currentOrder * -1;
   const compareValuesOnSort = React.useCallback((value1, value2, comparator, order) => ObjectUtils.sort(value1, value2, order, comparator, context && context.nullSortOrder || PrimeReact.nullSortOrder), [context]);
@@ -5588,14 +5536,9 @@ function DataTable(inProps) {
     clearTimeout(filterTimeout.current);
     filterTimeout.current = setTimeout(() => {
       const filters = cloneFilters(filtersToApply || d_filtersState);
-      if (props.onFilter) {
-        props.onFilter(createEvent({
-          filters
-        }));
-      } else {
-        setFirstState(0);
-        setFiltersState(filters);
-      }
+      props.onFilter(createEvent({
+        filters
+      }));
     }, props.filterDelay);
   };
   const executeLocalFilter = React.useCallback((field, rowData, filterMeta, index) => {
@@ -5764,8 +5707,6 @@ function DataTable(inProps) {
       attributeSelector.current = UniqueComponentId();
       elementRef.current.setAttribute(attributeSelector.current, '');
     }
-
-    // setFiltersState(cloneFilters(props.filters)); // Github #4248
     setD_filtersState(cloneFilters(props.filters));
     if (isStateful()) {
       restoreState();
@@ -5783,8 +5724,6 @@ function DataTable(inProps) {
     };
   }, [props.breakpoint]);
   useUpdateEffect(() => {
-    const filters = cloneFilters(props.filters);
-    setFiltersState(filters);
     setD_filtersState(cloneFilters(props.filters));
   }, [props.filters]);
   useUpdateEffect(() => {
@@ -5801,9 +5740,6 @@ function DataTable(inProps) {
   useUpdateEffect(() => {
     if (props.globalFilter) {
       filter(props.globalFilter, 'global', props.globalFilterMatchMode);
-    } else {
-      // #3819 was filtering but now reset filter state
-      setFiltersState(props.filters);
     }
   }, [props.globalFilter, props.globalFilterMatchMode]);
   useUnmountEffect(() => {
