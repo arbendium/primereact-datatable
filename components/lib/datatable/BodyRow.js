@@ -444,7 +444,6 @@ export const BodyRow = React.memo(props => {
 					tableProps={props.tableProps}
 					tableSelector={props.tableSelector}
 					value={props.value}
-					virtualScrollerOptions={props.virtualScrollerOptions}
 					ptCallbacks={props.ptCallbacks}
 					metaData={props.metaData}
 				/>
@@ -455,7 +454,6 @@ export const BodyRow = React.memo(props => {
 	});
 
 	const rowClassName = ObjectUtils.getPropValue(props.rowClassName, props.rowData, { props: props.tableProps });
-	const style = { height: props.virtualScrollerOptions ? props.virtualScrollerOptions.itemSize : undefined };
 	const content = createContent();
 	const tabIndex = getTabIndex();
 	const rowProps = mergeProps(
@@ -463,7 +461,6 @@ export const BodyRow = React.memo(props => {
 			role: 'row',
 			tabIndex,
 			className: classNames(cx('bodyRow', { rowProps: props })),
-			style,
 			onMouseDown: e => onMouseDown(e),
 			onMouseUp: e => onMouseUp(e),
 			onMouseEnter: e => onMouseEnter(e),

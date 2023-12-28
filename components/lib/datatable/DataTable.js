@@ -13,7 +13,6 @@ import { Paginator } from 'primereact/paginator/paginator.esm.js';
 import {
 	DomHandler, IconUtils, ObjectUtils, UniqueComponentId, classNames
 } from 'primereact/utils/utils.esm.js';
-import { VirtualScroller } from 'primereact/virtualscroller/virtualscroller.esm.js';
 import { ColumnBase } from '../column/ColumnBase.js';
 import { DataTableBase } from './DataTableBase.js';
 import { TableBody } from './TableBody.js';
@@ -116,7 +115,6 @@ export function DataTable(inProps) {
 	const wrapperRef = React.useRef(null);
 	const bodyRef = React.useRef(null);
 	const frozenBodyRef = React.useRef(null);
-	const virtualScrollerRef = React.useRef(null);
 	const reorderIndicatorUpRef = React.useRef(null);
 	const reorderIndicatorDownRef = React.useRef(null);
 	const colReorderIconWidth = React.useRef(null);
@@ -167,8 +165,6 @@ export function DataTable(inProps) {
 	const isCustomStateStorage = () => props.stateStorage === 'custom';
 
 	const isStateful = () => props.stateKey != null || isCustomStateStorage();
-
-	const isVirtualScrollerDisabled = () => ObjectUtils.isEmpty(props.virtualScrollerOptions) || !props.scrollable;
 
 	const isEquals = (data1, data2) => props.compareSelectionBy === 'equals' ? data1 === data2 : ObjectUtils.equals(data1, data2, props.dataKey);
 
@@ -404,7 +400,7 @@ export function DataTable(inProps) {
 	const addColumnWidthStyles = widths => {
 		createStyleElement();
 		let innerHTML = '';
-		const selector = `[data-pc-name="datatable"][${attributeSelector.current}] > [data-pc-section="wrapper"] ${isVirtualScrollerDisabled() ? '' : '> [data-pc-name="virtualscroller"]'} > [data-pc-section="table"]`;
+		const selector = `[data-pc-name="datatable"][${attributeSelector.current}] > [data-pc-section="wrapper"] > [data-pc-section="table"]`;
 
 		widths.forEach((width, index) => {
 			const style = `width: ${width}px !important; max-width: ${width}px !important`;
@@ -574,15 +570,6 @@ export function DataTable(inProps) {
 				// https://github.com/primefaces/primereact/issues/3970 Reasoning: resize table cells before updating the table width so that it can use existing computed cell widths and adjust only the one column.
 				resizeTableCells(newColumnWidth);
 				updateTableWidth(tableRef.current);
-
-				if (!isVirtualScrollerDisabled()) {
-					updateTableWidth(bodyRef.current);
-					updateTableWidth(frozenBodyRef.current);
-
-					if (wrapperRef.current) {
-						updateTableWidth(DomHandler.findSingle(wrapperRef.current, '[data-pc-name="virtualscroller"] > table > tbody'));
-					}
-				}
 			}
 
 			if (props.onColumnResizeEnd) {
@@ -617,7 +604,7 @@ export function DataTable(inProps) {
 		createStyleElement();
 
 		let innerHTML = '';
-		const selector = `[data-pc-name="datatable"][${attributeSelector.current}] > [data-pc-section="wrapper"] ${isVirtualScrollerDisabled() ? '' : '> [data-pc-name="virtualscroller"]'} > [data-pc-section="table"]`;
+		const selector = `[data-pc-name="datatable"][${attributeSelector.current}] > [data-pc-section="wrapper"] > [data-pc-section="table"]`;
 
 		widths.forEach((width, index) => {
 			const colWidth = index === colIndex ? newColumnWidth : nextColumnWidth && index === colIndex + 1 ? nextColumnWidth : width;
@@ -835,7 +822,7 @@ export function DataTable(inProps) {
 		if (!responsiveStyleElement.current) {
 			responsiveStyleElement.current = DomHandler.createInlineStyle((context && context.nonce) || PrimeReact.nonce, context && context.styleContainer);
 
-			const tableSelector = `.p-datatable-wrapper ${isVirtualScrollerDisabled() ? '' : '> .p-virtualscroller'} > .p-datatable-table`;
+			const tableSelector = '.p-datatable-wrapper > .p-datatable-table';
 			const selector = `.p-datatable[${attributeSelector.current}] > ${tableSelector}`;
 			const gridLinesSelector = `.p-datatable[${attributeSelector.current}].p-datatable-gridlines > ${tableSelector}`;
 			const innerHTML = `
@@ -1393,7 +1380,7 @@ export function DataTable(inProps) {
 		return null;
 	};
 
-	const createTableHeader = (options, empty, _isVirtualScrollerDisabled) => {
+	const createTableHeader = (data, columns, empty) => {
 		if (props.showHeaders === false) {
 			return null;
 		}
@@ -1402,8 +1389,6 @@ export function DataTable(inProps) {
 		const groupRowSortField = getGroupRowSortField();
 		const filters = d_filtersState;
 		const filtersStore = (!props.onFilter && props.filters) || filters;
-		const { items: processedData, props: virtualScrollerProps, columns } = options;
-		const data = _isVirtualScrollerDisabled || virtualScrollerProps.lazy ? processedData : virtualScrollerProps.items;
 
 		return (
 			<TableHeader
@@ -1450,12 +1435,8 @@ export function DataTable(inProps) {
 		);
 	};
 
-	const createTableBody = (options, selectionModeInColumn, empty, isVirtualScrollerDisabled) => {
-		const {
-			rows, columns, contentRef, style, className, spacerStyle, itemSize
-		} = options;
-
-		const value = React.useMemo(() => dataToRender(rows), [dataToRender, rows]);
+	const createTableBody = (data, columns, selectionModeInColumn, empty) => {
+		const value = React.useMemo(() => dataToRender(data), [dataToRender, data]);
 
 		const frozenBody = ObjectUtils.isNotEmpty(props.frozenValue) && (
 			<TableBody
@@ -1482,7 +1463,6 @@ export function DataTable(inProps) {
 				frozenRow
 				groupRowsBy={props.groupRowsBy}
 				isDataSelectable={props.isDataSelectable}
-				isVirtualScrollerDisabled
 				lazy={props.lazy}
 				loading={props.loading}
 				metaKeySelection={props.metaKeySelection}
@@ -1534,7 +1514,6 @@ export function DataTable(inProps) {
 				tableProps={props}
 				tableSelector={attributeSelector.current}
 				value={props.frozenValue}
-				// virtualScrollerOptions={options}
 				ptCallbacks={ptCallbacks}
 				metaData={metaData}
 			/>
@@ -1546,7 +1525,7 @@ export function DataTable(inProps) {
 				cellClassName={props.cellClassName}
 				cellSelection={props.cellSelection}
 				checkIcon={props.checkIcon}
-				className={classNames('p-datatable-tbody', className)}
+				className="p-datatable-tbody"
 				collapsedRowIcon={props.collapsedRowIcon}
 				columns={columns}
 				compareSelectionBy={props.compareSelectionBy}
@@ -1565,7 +1544,6 @@ export function DataTable(inProps) {
 				frozenRow={false}
 				groupRowsBy={props.groupRowsBy}
 				isDataSelectable={props.isDataSelectable}
-				isVirtualScrollerDisabled={isVirtualScrollerDisabled}
 				lazy={props.lazy}
 				loading={props.loading}
 				metaKeySelection={props.metaKeySelection}
@@ -1613,35 +1591,24 @@ export function DataTable(inProps) {
 				selectionModeInColumn={selectionModeInColumn}
 				showRowReorderElement={props.showRowReorderElement}
 				showSelectionElement={props.showSelectionElement}
-				style={style}
 				tabIndex={props.tabIndex}
 				tableProps={props}
 				tableSelector={attributeSelector.current}
 				value={value}
-				virtualScrollerContentRef={contentRef}
-				// virtualScrollerOptions={options}
 				ptCallbacks={ptCallbacks}
 				metaData={metaData}
 			/>
 		);
-		const spacerBody = ObjectUtils.isNotEmpty(spacerStyle) ? (
-			<TableBody hostName="DataTable" style={{ height: `calc(${spacerStyle.height} - ${rows.length * itemSize}px)` }} className="p-datatable-virtualscroller-spacer" ptCallbacks={ptCallbacks} metaData={metaData} />
-		) : null;
 
 		return (
 			<>
 				{frozenBody}
 				{body}
-				{spacerBody}
 			</>
 		);
 	};
 
-	const createTableFooter = React.useCallback(options => {
-		const { columns } = options;
-
-		return <TableFooter hostName="DataTable" tableProps={props} columns={columns} footerColumnGroup={props.footerColumnGroup} ptCallbacks={ptCallbacks} metaData={metaData} />;
-	}, [props, props.footerColumnGroup, columns, ptCallbacks, metaData]);
+	const createTableFooter = columns => <TableFooter hostName="DataTable" tableProps={props} columns={columns} footerColumnGroup={props.footerColumnGroup} ptCallbacks={ptCallbacks} metaData={metaData} />;
 
 	const data = processedData();
 	const totalRecords = getTotalRecords(data);
@@ -1649,66 +1616,38 @@ export function DataTable(inProps) {
 	const selectionModeInColumn = getSelectionModeInColumn(columns);
 	const selectable = props.selectionMode || selectionModeInColumn;
 
-	const createContent = (processedData, columns) => {
+	const createContent = (data, columns) => {
 		if (!columns) {
 			return;
 		}
 
-		const _isVirtualScrollerDisabled = isVirtualScrollerDisabled();
-		const virtualScrollerOptions = props.virtualScrollerOptions || {};
 		const wrapperProps = mergeProps(
 			{
 				className: ptCallbacks.cx('wrapper'),
-				style: { ...ptCallbacks.sx('wrapper'), maxHeight: _isVirtualScrollerDisabled ? props.scrollHeight : null }
+				style: { ...ptCallbacks.sx('wrapper'), maxHeight: props.scrollHeight }
 			},
 			ptCallbacks.ptm('wrapper')
 		);
 
-		const virtualScrollerContentTemplate = React.useCallback(options => {
-			const ref = el => {
-				tableRef.current = el;
-				options.spacerRef && options.spacerRef(el);
-			};
+		const tableHeader = createTableHeader(data, columns, empty);
+		const tableBody = createTableBody(data, columns, selectionModeInColumn, empty);
+		const tableFooter = createTableFooter(columns);
+		const tableProps = mergeProps(
+			{
+				className: classNames(props.tableClassName, ptCallbacks.cx('table')),
+				style: props.tableStyle,
+				role: 'table'
+			},
+			ptCallbacks.ptm('table')
+		);
 
-			const tableHeader = createTableHeader(options, empty, _isVirtualScrollerDisabled);
-			const tableBody = createTableBody(options, selectionModeInColumn, empty, _isVirtualScrollerDisabled);
-			const tableFooter = createTableFooter(options);
-			const tableProps = mergeProps(
-				{
-					className: classNames(props.tableClassName, ptCallbacks.cx('table')),
-					style: props.tableStyle,
-					role: 'table'
-				},
-				ptCallbacks.ptm('table')
-			);
-
-			return (
-				<table ref={ref} {...tableProps}>
+		return (
+			<div ref={wrapperRef} {...wrapperProps}>
+				<table ref={tableRef} {...tableProps}>
 					{tableHeader}
 					{tableBody}
 					{tableFooter}
 				</table>
-			);
-		}, [props, empty, selectionModeInColumn, metaData, _isVirtualScrollerDisabled, createTableHeader, createTableBody, createTableFooter, data, columns]);
-
-		return (
-			<div ref={wrapperRef} {...wrapperProps}>
-				<VirtualScroller
-					ref={virtualScrollerRef}
-					{...virtualScrollerOptions}
-					items={processedData}
-					columns={columns}
-					style={{ ...virtualScrollerOptions.style, ...{ height: props.scrollHeight !== 'flex' ? props.scrollHeight : undefined } }}
-					scrollHeight={props.scrollHeight !== 'flex' ? undefined : '100%'}
-					disabled={_isVirtualScrollerDisabled}
-					loaderDisabled
-					inline
-					autoSize
-					pt={ptCallbacks.ptm('virtualScroller')}
-					__parentMetadata={{ parent: metaData }}
-					showSpacer={false}
-					contentTemplate={virtualScrollerContentTemplate}
-				/>
 			</div>
 		);
 	};

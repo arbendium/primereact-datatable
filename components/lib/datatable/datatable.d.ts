@@ -16,7 +16,6 @@ import { PassThroughOptions } from '../passthrough';
 import { RowPassThroughOptions } from '../row/row';
 import { TooltipPassThroughOptions } from '../tooltip/tooltip';
 import { IconType, PassThroughType } from '../utils/utils';
-import { VirtualScroller, VirtualScrollerPassThroughOptions, VirtualScrollerProps } from '../virtualscroller/virtualscroller';
 
 type DataTableHeaderTemplateType<TValue extends DataTableValueArray> = React.ReactNode | ((options: DataTableHeaderTemplateOptions<TValue>) => React.ReactNode);
 
@@ -896,18 +895,9 @@ export interface DataTablePassThroughOptions {
      */
     wrapper?: DataTablePassThroughType<React.HTMLAttributes<HTMLDivElement>>;
     /**
-     * Uses to pass attributes to the VirtualScroller component.
-     * @see {@link VirtualScrollerPassThroughOptions}
-     */
-    virtualScroller?: VirtualScrollerPassThroughOptions;
-    /**
      * Uses to pass attributes to the table's DOM element.
      */
     table?: DataTablePassThroughType<React.HTMLAttributes<HTMLTableElement>>;
-    /**
-     * Uses to pass attributes to the virtual scroller spacer's DOM element.
-     */
-    virtualScrollerSpacer?: DataTablePassThroughType<React.HTMLAttributes<HTMLTableSectionElement>>;
     /**
      * Uses to pass attributes to the footer's DOM element.
      */
@@ -1423,12 +1413,6 @@ interface DataTableBaseProps<TValue extends DataTableValueArray> extends Omit<Re
      */
     totalRecords?: number | undefined;
     /**
-     * Whether to use the virtualScroller feature. The properties of VirtualScroller component can be used like an object in it.
-     *
-     * Note: Currently only vertical orientation mode is supported.
-     */
-    virtualScrollerOptions?: VirtualScrollerProps | undefined;
-    /**
      * Function that takes the cell data and returns an object in &#123;'styleclass' : condition&#125; format to define a classname for a particular now.
      * @param {*} value - Value of the cell.
      * @param {DataTableCellClassNameOptions<TValue>} options - ClassName options.
@@ -1863,8 +1847,4 @@ export declare class DataTable<TValue extends DataTableValueArray> extends React
      * @return {HTMLDivElement} Container element
      */
     public getTable(): HTMLTableElement;
-    /**
-     * Used to get the virtual scroller.
-     */
-    public getVirtualScroller(): VirtualScroller;
 }

@@ -248,19 +248,6 @@ const styles = `
 		display: none;
 	}
 
-	/* VirtualScroller */
-	.p-datatable-virtualscroller-spacer {
-		display: flex;
-	}
-
-	.p-datatable .p-virtualscroller .p-virtualscroller-loading {
-		transform: none;
-		min-height: 0;
-		position: sticky;
-		top: 0;
-		left: 0;
-	}
-
 	/* Alignment */
 	.p-datatable .p-datatable-thead > tr > th.p-align-left > .p-column-header-content,
 	.p-datatable .p-datatable-tbody > tr > td.p-align-left,
@@ -353,7 +340,6 @@ const classes = {
 	rowEditorInitIcon: 'p-row-editor-init-icon',
 	rowEditorInitButton: 'p-row-editor-init p-link',
 	rowExpansion: 'p-datatable-row-expansion',
-	virtualScrollerSpacer: ({ className }) => className,
 	tbody: ({ className }) => className,
 	filterInput: 'p-fluid p-column-filter-element',
 	filterMenuButton: ({ overlayVisibleState, hasFilter }) => classNames('p-column-filter-menu-button p-link', {
@@ -558,7 +544,6 @@ export const DataTableBase = ComponentBase.extend({
 		tableStyle: null,
 		totalRecords: null,
 		value: null,
-		virtualScrollerOptions: null,
 		children: undefined
 	},
 	css: {
