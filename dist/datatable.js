@@ -639,7 +639,6 @@ const DataTableBase = ComponentBase.extend({
     headerColumnGroup: null,
     id: null,
     isDataSelectable: null,
-    lazy: false,
     loading: false,
     loadingIcon: null,
     metaKeySelection: false,
@@ -732,7 +731,6 @@ const DataTableBase = ComponentBase.extend({
     tabIndex: 0,
     tableClassName: null,
     tableStyle: null,
-    totalRecords: null,
     value: null,
     children: undefined
   },
@@ -5110,7 +5108,7 @@ function DataTable(inProps) {
     }
     return null;
   };
-  const getTotalRecords = data => props.lazy ? props.totalRecords : data ? data.length : 0;
+  const getTotalRecords = data => data ? data.length : 0;
   const onEditingMetaChange = React.useCallback(e => {
     const {
       rowData,
@@ -5760,38 +5758,35 @@ function DataTable(inProps) {
   });
   const processedData = React.useCallback(localState => {
     let data = props.value || [];
-    if (!props.lazy) {
-      if (data && data.length) {
-        const localFilters = localState?.filters ?? filters;
-        const localSortField = localState?.sortField ?? sortField;
-        const localSortOrder = localState?.sortOrder ?? sortOrder;
-        const localMultiSortMeta = localState?.multiSortMeta ?? multiSortMeta;
-        const sortColumn = columns.find(col => getColumnProp(col, 'field') === localSortField);
-        if (sortColumn) {
-          columnSortable.current = getColumnProp(sortColumn, 'sortable');
-          columnSortFunction.current = getColumnProp(sortColumn, 'sortFunction');
-        }
-        if (ObjectUtils.isNotEmpty(localFilters) || props.globalFilter) {
-          data = filterLocal(data, localFilters);
-        }
-        if (localSortField || ObjectUtils.isNotEmpty(localMultiSortMeta)) {
-          if (props.sortMode === 'single') {
-            data = sortSingle(data, localSortField, localSortOrder);
-          } else if (props.sortMode === 'multiple') {
-            data = sortMultiple(data, localMultiSortMeta);
-          }
+    if (data && data.length) {
+      const localFilters = localState?.filters ?? filters;
+      const localSortField = localState?.sortField ?? sortField;
+      const localSortOrder = localState?.sortOrder ?? sortOrder;
+      const localMultiSortMeta = localState?.multiSortMeta ?? multiSortMeta;
+      const sortColumn = columns.find(col => getColumnProp(col, 'field') === localSortField);
+      if (sortColumn) {
+        columnSortable.current = getColumnProp(sortColumn, 'sortable');
+        columnSortFunction.current = getColumnProp(sortColumn, 'sortFunction');
+      }
+      if (ObjectUtils.isNotEmpty(localFilters) || props.globalFilter) {
+        data = filterLocal(data, localFilters);
+      }
+      if (localSortField || ObjectUtils.isNotEmpty(localMultiSortMeta)) {
+        if (props.sortMode === 'single') {
+          data = sortSingle(data, localSortField, localSortOrder);
+        } else if (props.sortMode === 'multiple') {
+          data = sortMultiple(data, localMultiSortMeta);
         }
       }
     }
     return data;
-  }, [props.value, props.lazy, filters, sortField, sortOrder, multiSortMeta, columns, props.globalFilter, filterLocal, props.sortMode, sortSingle, sortMultiple]);
+  }, [props.value, filters, sortField, sortOrder, multiSortMeta, columns, props.globalFilter, filterLocal, props.sortMode, sortSingle, sortMultiple]);
   const dataToRender = React.useCallback(data => {
     if (data && props.paginator) {
-      const localFirst = props.lazy ? 0 : first;
-      return data.slice(localFirst, localFirst + rows);
+      return data.slice(first, first + rows);
     }
     return data;
-  }, [props.paginator, props.lazy, first, rows]);
+  }, [props.paginator, first, rows]);
   useMountEffect(() => {
     if (elementRef.current) {
       attributeSelector.current = UniqueComponentId();
@@ -5953,7 +5948,6 @@ function DataTable(inProps) {
       frozenRow: true,
       groupRowsBy: props.groupRowsBy,
       isDataSelectable: props.isDataSelectable,
-      lazy: props.lazy,
       loading: props.loading,
       metaKeySelection: props.metaKeySelection,
       onCellClick: props.onCellClick,
@@ -6032,7 +6026,6 @@ function DataTable(inProps) {
       frozenRow: false,
       groupRowsBy: props.groupRowsBy,
       isDataSelectable: props.isDataSelectable,
-      lazy: props.lazy,
       loading: props.loading,
       metaKeySelection: props.metaKeySelection,
       onCellClick: props.onCellClick,

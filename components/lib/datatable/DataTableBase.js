@@ -449,7 +449,6 @@ export const DataTableBase = ComponentBase.extend({
 		headerColumnGroup: null,
 		id: null,
 		isDataSelectable: null,
-		lazy: false,
 		loading: false,
 		loadingIcon: null,
 		metaKeySelection: false,
@@ -542,7 +541,6 @@ export const DataTableBase = ComponentBase.extend({
 		tabIndex: 0,
 		tableClassName: null,
 		tableStyle: null,
-		totalRecords: null,
 		value: null,
 		children: undefined
 	},

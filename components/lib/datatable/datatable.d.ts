@@ -1180,11 +1180,6 @@ interface DataTableBaseProps<TValue extends DataTableValueArray> extends Omit<Re
      */
     headerColumnGroup?: React.ReactNode | undefined;
     /**
-     * Defines if data is loaded and interacted with in lazy manner.
-     * @defaultValue false
-     */
-    lazy?: boolean;
-    /**
      * Displays a loader to indicate data load is in progress.
      * @defaultValue false
      */
@@ -1408,10 +1403,6 @@ interface DataTableBaseProps<TValue extends DataTableValueArray> extends Omit<Re
      * Inline style of the table element.
      */
     tableStyle?: React.CSSProperties | undefined;
-    /**
-     * Number of total records, defaults to length of value when not defined.
-     */
-    totalRecords?: number | undefined;
     /**
      * Function that takes the cell data and returns an object in &#123;'styleclass' : condition&#125; format to define a classname for a particular now.
      * @param {*} value - Value of the cell.
