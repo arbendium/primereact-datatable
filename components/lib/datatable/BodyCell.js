@@ -82,8 +82,6 @@ export const BodyCell = React.memo(props => {
 
 	const isOutsideClicked = target => elementRef.current && !(elementRef.current.isSameNode(target) || elementRef.current.contains(target));
 
-	const getVirtualScrollerOption = option => props.virtualScrollerOptions ? props.virtualScrollerOptions[option] : null;
-
 	const getStyle = () => {
 		const bodyStyle = getColumnProp('bodyStyle');
 		const columnStyle = getColumnProp('style');
@@ -520,22 +518,6 @@ export const BodyCell = React.memo(props => {
 		}
 	});
 
-	const createLoading = () => {
-		const options = getVirtualScrollerOption('getLoaderOptions')(props.rowIndex, {
-			cellIndex: props.index,
-			cellFirst: props.index === 0,
-			cellLast: props.index === getVirtualScrollerOption('columns').length - 1,
-			cellEven: props.index % 2 === 0,
-			cellOdd: props.index % 2 !== 0,
-			column: props.column,
-			field
-		});
-		const content = ObjectUtils.getJSXElement(getVirtualScrollerOption('loadingTemplate'), options);
-		const bodyCellProps = mergeProps(getColumnPTOptions('bodyCell'));
-
-		return <td {...bodyCellProps}>{content}</td>;
-	};
-
 	const createElement = () => {
 		let content; let
 			editorKeyHelper;
@@ -822,7 +804,7 @@ export const BodyCell = React.memo(props => {
 		);
 	};
 
-	return getVirtualScrollerOption('loading') ? createLoading() : createElement();
+	return createElement();
 });
 
 BodyCell.displayName = 'BodyCell';

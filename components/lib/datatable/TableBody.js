@@ -33,7 +33,6 @@ export const TableBody = React.memo(
 		const refCallback = React.useCallback(
 			el => {
 				elementRef.current = el;
-				props.virtualScrollerContentRef && props.virtualScrollerContentRef(el);
 			},
 			[props]
 		);
@@ -147,12 +146,6 @@ export const TableBody = React.memo(
 		const getColumnsLength = () => props.columns ? props.columns.length : 0;
 
 		const getColumnProp = (column, name) => ColumnBase.getCProp(column, name);
-
-		const getVirtualScrollerOption = (option, options) => {
-			options = options || props.virtualScrollerOptions;
-
-			return options ? options[option] : null;
-		};
 
 		const findIndex = (collection, rowData) => (collection || []).findIndex(data => equals(rowData, data));
 
@@ -1004,7 +997,6 @@ export const TableBody = React.memo(
 						tableProps={props.tableProps}
 						tableSelector={props.tableSelector}
 						value={props.value}
-						virtualScrollerOptions={props.virtualScrollerOptions}
 						ptCallbacks={props.ptCallbacks}
 						metaData={props.metaData}
 					/>
@@ -1066,7 +1058,7 @@ export const TableBody = React.memo(
 
 		const createContent = () => (
 			props.value && props.value.map((rowData, index) => {
-				const rowIndex = getVirtualScrollerOption('getItemOptions') ? getVirtualScrollerOption('getItemOptions')(index).index : props.first + index;
+				const rowIndex = props.first + index;
 				const key = getRowKey(rowData, rowIndex);
 				const expanded = isRowExpanded(rowData);
 				const colSpan = getColumnsLength();
@@ -1088,13 +1080,12 @@ export const TableBody = React.memo(
 		);
 
 		const content = props.empty ? createEmptyContent() : createContent();
-		const ptKey = props.className === 'p-datatable-virtualscroller-spacer' ? 'virtualScrollerSpacer' : 'tbody';
 		const tbodyProps = mergeProps(
 			{
 				style: props.style,
-				className: cx(ptKey, { className: props.className })
+				className: cx('tbody', { className: props.className })
 			},
-			ptm(ptKey, { hostName: props.hostName })
+			ptm('tbody', { hostName: props.hostName })
 		);
 
 		return (
