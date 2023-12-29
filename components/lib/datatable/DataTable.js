@@ -872,10 +872,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 			setFirstState(e.first);
 			setRowsState(e.rows);
 		}
-
-		if (props.onValueChange) {
-			props.onValueChange(processedData());
-		}
 	};
 
 	const onSortChange = e => {
@@ -933,16 +929,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 			setSortFieldState(eventMeta.sortField);
 			setSortOrderState(eventMeta.sortOrder);
 			setMultiSortMetaState(eventMeta.multiSortMeta);
-		}
-
-		if (props.onValueChange) {
-			props.onValueChange(
-				processedData({
-					sortField: localSortField,
-					sortOrder: localSortOrder,
-					multiSortMeta: localMultiSortMeta
-				})
-			);
 		}
 	};
 
@@ -1066,10 +1052,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 			} else {
 				setFirstState(0);
 				setFiltersState(filters);
-			}
-
-			if (props.onValueChange) {
-				props.onValueChange(processedData({ filters }));
 			}
 		}, props.filterDelay);
 	};
@@ -1435,10 +1417,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 
 		setFiltersState(filters);
 		setD_filtersState(cloneFilters(props.filters));
-
-		if (props.onValueChange) {
-			props.onValueChange(processedData({ filters }));
-		}
 	}, [props.filters]);
 
 	useUpdateEffect(() => {
