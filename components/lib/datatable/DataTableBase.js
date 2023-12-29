@@ -503,7 +503,6 @@ export const DataTableBase = ComponentBase.extend({
 		onSort: null,
 		onStateRestore: null,
 		onStateSave: null,
-		onValueChange: null,
 		pageLinkSize: 5,
 		paginator: false,
 		paginatorClassName: null,

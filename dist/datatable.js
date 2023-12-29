@@ -696,7 +696,6 @@ const DataTableBase = ComponentBase.extend({
     onSort: null,
     onStateRestore: null,
     onStateSave: null,
-    onValueChange: null,
     pageLinkSize: 5,
     paginator: false,
     paginatorClassName: null,
@@ -5525,9 +5524,6 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       setFirstState(e.first);
       setRowsState(e.rows);
     }
-    if (props.onValueChange) {
-      props.onValueChange(processedData());
-    }
   };
   const onSortChange = e => {
     clearEditingMetaData();
@@ -5578,13 +5574,6 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       setSortFieldState(eventMeta.sortField);
       setSortOrderState(eventMeta.sortOrder);
       setMultiSortMetaState(eventMeta.multiSortMeta);
-    }
-    if (props.onValueChange) {
-      props.onValueChange(processedData({
-        sortField: localSortField,
-        sortOrder: localSortOrder,
-        multiSortMeta: localMultiSortMeta
-      }));
     }
   };
   const getCalculatedSortOrder = currentOrder => props.removableSort ? props.defaultSortOrder === currentOrder ? currentOrder * -1 : 0 : currentOrder * -1;
@@ -5695,11 +5684,6 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
       } else {
         setFirstState(0);
         setFiltersState(filters);
-      }
-      if (props.onValueChange) {
-        props.onValueChange(processedData({
-          filters
-        }));
       }
     }, props.filterDelay);
   };
@@ -6003,11 +5987,6 @@ const DataTable = /*#__PURE__*/React.forwardRef((inProps, ref) => {
     const filters = cloneFilters(props.filters);
     setFiltersState(filters);
     setD_filtersState(cloneFilters(props.filters));
-    if (props.onValueChange) {
-      props.onValueChange(processedData({
-        filters
-      }));
-    }
   }, [props.filters]);
   useUpdateEffect(() => {
     if (isStateful()) {
