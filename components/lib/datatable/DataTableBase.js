@@ -423,6 +423,7 @@ export const DataTableBase = ComponentBase.extend({
 		checkIcon: null,
 		className: null,
 		collapsedRowIcon: null,
+		columns: null,
 		columnResizeMode: 'fit',
 		compareSelectionBy: 'deepEquals',
 		contextMenuSelection: null,
