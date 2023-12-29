@@ -44,7 +44,7 @@ const getActiveFilters = filters => {
 	return Object.fromEntries(entries);
 };
 
-export const DataTable = React.forwardRef((inProps, ref) => {
+export function DataTable(inProps) {
 	const context = React.useContext(PrimeReactContext);
 	const props = React.useMemo(() => DataTableBase.getProps(inProps, context), [inProps, context]);
 	const [firstState, setFirstState] = React.useState(props.first);
@@ -273,14 +273,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		}
 	};
 
-	const clearState = () => {
-		const storage = getStorage();
-
-		if (storage && props.stateKey) {
-			storage.removeItem(props.stateKey);
-		}
-	};
-
 	const restoreState = () => {
 		let restoredState = {};
 
@@ -302,10 +294,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 			}
 		}
 
-		_restoreState(restoredState);
-	};
-
-	const restoreTableState = restoredState => {
 		_restoreState(restoredState);
 	};
 
@@ -1197,130 +1185,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		onFilterApply(filters);
 	};
 
-	const reset = () => {
-		setD_rowsState(props.rows);
-		setD_filtersState(cloneFilters(props.filters));
-		setGroupRowsSortMetaState(null);
-		setEditingMetaState({});
-
-		if (!props.onPage) {
-			setFirstState(props.first);
-			setRowsState(props.rows);
-		}
-
-		if (!props.onSort) {
-			setSortFieldState(props.sortField);
-			setSortOrderState(props.sortOrder);
-			setMultiSortMetaState(props.multiSortMeta);
-		}
-
-		if (!props.onFilter) {
-			setFiltersState(props.filters);
-		}
-
-		resetColumnOrder();
-	};
-
-	const resetScroll = () => {
-		if (wrapperRef.current) {
-			const scrollableContainer = !isVirtualScrollerDisabled() ? DomHandler.findSingle(wrapperRef.current, '.p-virtualscroller') : wrapperRef.current;
-
-			scrollableContainer.scrollTo(0, 0);
-		}
-	};
-
-	const resetResizeColumnsWidth = () => {
-		destroyStyleElement();
-	};
-
-	const resetColumnOrder = () => {
-		const columns = unorderedColumns;
-		let columnOrder = [];
-
-		if (columns) {
-			columnOrder = columns.reduce((orders, col) => {
-				orders.push(getColumnProp(col, 'columnKey') || getColumnProp(col, 'field'));
-
-				return orders;
-			}, []);
-		}
-
-		setColumnOrderState(columnOrder);
-	};
-
-	const exportCSV = options => {
-		let data;
-		let csv = '\ufeff';
-
-		if (options && options.selectionOnly) {
-			data = props.selection || [];
-		} else {
-			data = [...(props.frozenValue || []), ...(processedData() || [])];
-		}
-
-		// headers
-		columns.forEach((column, i) => {
-			const [field, header, exportHeader, exportable] = [getColumnProp(column, 'field'), getColumnProp(column, 'header'), getColumnProp(column, 'exportHeader'), getColumnProp(column, 'exportable')];
-
-			if (exportable && field) {
-				const columnHeader = String(exportHeader || header || field)
-					.replace(/"/g, '""')
-					.replace(/\n/g, '\u2028');
-
-				csv += `"${columnHeader}"`;
-
-				if (i < columns.length - 1) {
-					csv += props.csvSeparator;
-				}
-			}
-		});
-
-		// body
-		data.forEach(record => {
-			csv += '\n';
-			columns.forEach((column, i) => {
-				const [colField, exportField, exportable] = [getColumnProp(column, 'field'), getColumnProp(column, 'exportField'), getColumnProp(column, 'exportable')];
-				const field = exportField || colField;
-
-				if (exportable && field) {
-					let cellData = ObjectUtils.resolveFieldData(record, field);
-
-					if (cellData != null) {
-						if (props.exportFunction) {
-							cellData = props.exportFunction({
-								data: cellData, field, rowData: record, column
-							});
-						} else {
-							cellData = String(cellData).replace(/"/g, '""').replace(/\n/g, '\u2028');
-						}
-					} else cellData = '';
-
-					csv += `"${cellData}"`;
-
-					if (i < columns.length - 1) {
-						csv += props.csvSeparator;
-					}
-				}
-			});
-		});
-
-		DomHandler.exportCSV(csv, props.exportFilename);
-	};
-
-	const closeEditingCell = () => {
-		if (props.editMode !== 'row') {
-			document.body.click();
-		}
-	};
-
-	const closeEditingRows = () => {
-		DomHandler.find(document.body, '.p-row-editor-cancel').forEach((button, index) => {
-			setTimeout(() => {
-				button.click();
-			}, index * 5);
-		});
-	};
-
 	const createEvent = event => ({
 		first,
 		rows,
@@ -1447,26 +1311,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 		destroyStyleElement();
 		destroyResponsiveStyle();
 	});
-
-	React.useImperativeHandle(ref, () => ({
-		props,
-		clearState,
-		closeEditingCell,
-		closeEditingRows,
-		exportCSV,
-		filter,
-		reset,
-		resetColumnOrder,
-		resetScroll,
-		resetResizeColumnsWidth,
-		restoreColumnWidths,
-		restoreState,
-		restoreTableState,
-		saveState,
-		getElement: () => elementRef.current,
-		getTable: () => tableRef.current,
-		getVirtualScroller: () => virtualScrollerRef.current
-	}));
 
 	const createLoader = () => {
 		if (props.loading) {
@@ -1962,6 +1806,6 @@ export const DataTable = React.forwardRef((inProps, ref) => {
 			{reorderIndicators}
 		</div>
 	);
-});
+}
 
 DataTable.displayName = 'DataTable';
