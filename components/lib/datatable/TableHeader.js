@@ -92,7 +92,7 @@ export const TableHeader = React.memo(props => {
 	};
 
 	const onCheckboxChange = e => {
-		props.onColumnCheckboxChange(e, props.value);
+		props.onColumnCheckboxChange(e);
 	};
 
 	useMountEffect(() => {
@@ -150,7 +150,6 @@ export const TableHeader = React.memo(props => {
 					sortableDisabledFields={sortableDisabledFieldsState}
 					tabIndex={props.tabIndex}
 					tableProps={props.tableProps}
-					value={props.value}
 					ptCallbacks={props.ptCallbacks}
 					metaData={props.metaData}
 					unstyled={props.unstyled}
@@ -161,7 +160,7 @@ export const TableHeader = React.memo(props => {
 
 	const createCheckbox = selectionMode => {
 		if (props.showSelectAll && selectionMode === 'multiple') {
-			const allRowsSelected = props.allRowsSelected(props.value);
+			const allRowsSelected = props.allRowsSelected();
 
 			return <HeaderCheckbox hostName={props.hostName} checked={allRowsSelected} onChange={onCheckboxChange} disabled={props.empty} ptCallbacks={props.ptCallbacks} metaData={props.metaData} />;
 		}
