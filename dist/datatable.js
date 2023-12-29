@@ -601,6 +601,7 @@ const DataTableBase = ComponentBase.extend({
     checkIcon: null,
     className: null,
     collapsedRowIcon: null,
+    columns: null,
     columnResizeMode: 'fit',
     compareSelectionBy: 'deepEquals',
     contextMenuSelection: null,
@@ -3255,7 +3256,7 @@ const TableFooter = /*#__PURE__*/React.memo(props => {
     const columns = React.Children.toArray(RowBase.getCProp(row, 'children'));
     return createFooterCells(columns);
   };
-  const createFooterCells = columns => React.Children.map(columns, (col, i) => {
+  const createFooterCells = columns => columns.map((col, i) => {
     const isVisible = col ? !getColumnProp(col, 'hidden') : true;
     const key = col ? getColumnProp(col, 'columnKey') || getColumnProp(col, 'field') || i : i;
     return isVisible && /*#__PURE__*/React.createElement(FooterCell, {
@@ -4575,7 +4576,7 @@ const TableHeader = /*#__PURE__*/React.memo(props => {
     const columns = React.Children.toArray(RowBase.getCProp(row, 'children'));
     return createHeaderCells(columns);
   };
-  const createHeaderCells = columns => React.Children.map(columns, (col, i) => {
+  const createHeaderCells = columns => columns.map((col, i) => {
     const isVisible = col ? !getColumnProp(col, 'hidden') : true;
     const key = col ? getColumnProp(col, 'columnKey') || getColumnProp(col, 'field') || i : i;
     return isVisible && /*#__PURE__*/React.createElement(HeaderCell, {
@@ -4833,20 +4834,22 @@ function DataTable(inProps) {
     sortField,
     sortOrder
   } = props;
-  const unorderedColumns = React.useMemo(() => React.Children.toArray(props.children), [props.children]);
-  const findColumnByKey = React.useCallback((columns, key) => ObjectUtils.isNotEmpty(columns) ? columns.find(col => getColumnProp(col, 'columnKey') === key || getColumnProp(col, 'field') === key) : null, []);
   const columns = React.useMemo(() => {
-    const columns = unorderedColumns;
-    if (columns && props.reorderableColumns && columnOrderState) {
-      const orderedColumns = columnOrderState.reduce((arr, columnKey) => {
-        const column = findColumnByKey(columns, columnKey);
-        column && arr.push(column);
-        return arr;
-      }, []);
-      return [...orderedColumns, ...columns.filter(col => orderedColumns.indexOf(col) < 0)];
+    const columns = props.columns.map(props => ({
+      props
+    }));
+    if (props.reorderableColumns && columnOrderState) {
+      const orderedColumns = [];
+      for (const columnKey of columnOrderState) {
+        const column = columns.find(col => getColumnProp(col, 'columnKey') === columnKey || getColumnProp(col, 'field') === columnKey);
+        if (column) {
+          orderedColumns.push(column);
+        }
+      }
+      return [...orderedColumns, ...columns.filter(col => !orderedColumns.includes(col))];
     }
     return columns;
-  }, [unorderedColumns, props.reorderableColumns, columnOrderState, findColumnByKey]);
+  }, [props.columns, props.reorderableColumns, columnOrderState]);
   const getStorage = () => {
     switch (props.stateStorage) {
       case 'local':

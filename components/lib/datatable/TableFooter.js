@@ -44,7 +44,7 @@ export const TableFooter = React.memo(props => {
 		return createFooterCells(columns);
 	};
 
-	const createFooterCells = columns => React.Children.map(columns, (col, i) => {
+	const createFooterCells = columns => columns.map((col, i) => {
 		const isVisible = col ? !getColumnProp(col, 'hidden') : true;
 		const key = col ? getColumnProp(col, 'columnKey') || getColumnProp(col, 'field') || i : i;
 

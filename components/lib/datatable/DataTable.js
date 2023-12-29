@@ -145,27 +145,25 @@ export function DataTable(inProps) {
 		filters, first, multiSortMeta = emptyArray, rows, sortField, sortOrder
 	} = props;
 
-	const unorderedColumns = React.useMemo(() => React.Children.toArray(props.children), [props.children]);
-
-	const findColumnByKey = React.useCallback((columns, key) => ObjectUtils.isNotEmpty(columns) ? columns.find(col => getColumnProp(col, 'columnKey') === key || getColumnProp(col, 'field') === key) : null, []);
-
 	const columns = React.useMemo(() => {
-		const columns = unorderedColumns;
+		const columns = props.columns.map(props => ({ props }));
 
-		if (columns && props.reorderableColumns && columnOrderState) {
-			const orderedColumns = columnOrderState.reduce((arr, columnKey) => {
-				const column = findColumnByKey(columns, columnKey);
+		if (props.reorderableColumns && columnOrderState) {
+			const orderedColumns = [];
 
-				column && arr.push(column);
+			for (const columnKey of columnOrderState) {
+				const column = columns.find(col => getColumnProp(col, 'columnKey') === columnKey || getColumnProp(col, 'field') === columnKey);
 
-				return arr;
-			}, []);
+				if (column) {
+					orderedColumns.push(column);
+				}
+			}
 
-			return [...orderedColumns, ...columns.filter(col => orderedColumns.indexOf(col) < 0)];
+			return [...orderedColumns, ...columns.filter(col => !orderedColumns.includes(col))];
 		}
 
 		return columns;
-	}, [unorderedColumns, props.reorderableColumns, columnOrderState, findColumnByKey]);
+	}, [props.columns, props.reorderableColumns, columnOrderState]);
 
 	const getStorage = () => {
 		switch (props.stateStorage) {

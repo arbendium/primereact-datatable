@@ -106,7 +106,7 @@ export const TableHeader = React.memo(props => {
 		return createHeaderCells(columns);
 	};
 
-	const createHeaderCells = columns => React.Children.map(columns, (col, i) => {
+	const createHeaderCells = columns => columns.map((col, i) => {
 		const isVisible = col ? !getColumnProp(col, 'hidden') : true;
 		const key = col ? getColumnProp(col, 'columnKey') || getColumnProp(col, 'field') || i : i;
 
