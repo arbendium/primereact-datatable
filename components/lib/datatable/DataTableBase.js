@@ -430,7 +430,6 @@ export const DataTableBase = ComponentBase.extend({
 		exportFilename: 'download',
 		exportFunction: null,
 		filterClearIcon: null,
-		filterDelay: 300,
 		filterDisplay: 'menu',
 		filterIcon: null,
 		filterLocale: undefined,
