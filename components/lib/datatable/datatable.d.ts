@@ -1093,11 +1093,6 @@ interface DataTableBaseProps<TValue extends DataTableValueArray> extends Omit<Re
      */
     exportFilename?: string | undefined;
     /**
-     * Delay in milliseconds before filtering the data.
-     * @defaultValue 300
-     */
-    filterDelay?: number | undefined;
-    /**
      * Layout of the filter elements, valid values are "row" and "menu".
      * @defaultValue menu
      */

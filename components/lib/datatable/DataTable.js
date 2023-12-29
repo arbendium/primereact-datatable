@@ -112,7 +112,6 @@ export function DataTable(inProps) {
 	const columnSortable = React.useRef(false);
 	const columnSortFunction = React.useRef(null);
 	const columnField = React.useRef(null);
-	const filterTimeout = React.useRef(null);
 
 	const [bindDocumentMouseMoveListener, unbindDocumentMouseMoveListener] = useEventListener({
 		type: 'mousemove',
@@ -952,12 +951,9 @@ export function DataTable(inProps) {
 	};
 
 	const onFilterApply = filtersToApply => {
-		clearTimeout(filterTimeout.current);
-		filterTimeout.current = setTimeout(() => {
-			const filters = cloneFilters(filtersToApply || d_filtersState);
+		const filters = cloneFilters(filtersToApply || d_filtersState);
 
-			props.onFilter(createEvent({ filters }));
-		}, props.filterDelay);
+		props.onFilter(createEvent({ filters }));
 	};
 
 	const executeLocalFilter = React.useCallback((field, rowData, filterMeta, index) => {
