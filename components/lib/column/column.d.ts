@@ -12,7 +12,7 @@ import * as React from 'react';
 import { FilterMatchMode } from '../api/api';
 import { ButtonPassThroughOptions } from '../button/button';
 import { ComponentHooks } from '../componentbase/componentbase';
-import { DataTablePassThroughOptions } from '../datatable/datatable';
+import { DataTablePassThroughOptions, SortOrder } from '../datatable/datatable';
 import { DropdownPassThroughOptions } from '../dropdown/dropdown';
 import { PassThroughOptions } from '../passthrough';
 import { TooltipOptions } from '../tooltip/tooltipoptions';
@@ -1144,10 +1144,23 @@ export interface ColumnProps {
      */
     onFilterOperatorChange?(event: ColumnFilterOperatorChangeEvent): void;
     /**
+     * Sort compare function for custom sorting.
+     * @param {any} a - Value used for comparison.
+     * @param {any} b - Value used for comparison.
+     * @return {SortOrder} Sort order.
+     */
+    sortCompare(a: any, b: any, order: SortOrder, defaultCompare: ((a: any, b: any, order: SortOrder) => SortOrder)): SortOrder;
+    /**
      * Sort function for custom sorting.
      * @param {ColumnSortEvent} event - Custom sort event.
      */
     sortFunction?(event: ColumnSortEvent): void;
+    /**
+     * Sort value getter function for custom sorting optimization.
+     * @param {any} data - Record.
+     * @return {any} Value used for comparison.
+     */
+    sortValue(record: any): any;
 }
 
 /**
