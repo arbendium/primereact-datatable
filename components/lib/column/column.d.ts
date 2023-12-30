@@ -1088,7 +1088,7 @@ export interface ColumnProps {
      * @param {*} filterLocale - Filter locale of the event.
      * @param {*} params - Params of the filter event.
      */
-    filterFunction?(value: any, filter: any, filterLocale: string, params: ColumnFilterEvent): void;
+    filterFunction?(value: any, filter: any, matchMode: FilterMatchMode, defaultFilter: Function, params: ColumnFilterEvent): void;
     /**
      * Callback to invoke before the cell editor is hidden.
      * @param {ColumnEvent} event - Custom event.

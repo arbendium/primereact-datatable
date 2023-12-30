@@ -146,7 +146,7 @@ export function DataTable(inProps) {
 	} = props;
 
 	const columns = React.useMemo(() => {
-		const columns = props.columns.map(props => ({ props }));
+		let columns = props.columns.map(props => ({ props }));
 
 		if (props.reorderableColumns && columnOrderState) {
 			const orderedColumns = [];
@@ -159,8 +159,17 @@ export function DataTable(inProps) {
 				}
 			}
 
-			return [...orderedColumns, ...columns.filter(col => !orderedColumns.includes(col))];
+			columns = [...orderedColumns, ...columns.filter(col => !orderedColumns.includes(col))];
 		}
+
+		columns.forEach(column => {
+			const filterFunction = getColumnProp(column, 'filterFunction');
+
+			if (filterFunction) {
+				const field = getColumnProp(column, 'filterField') || getColumnProp(column, 'field');
+				FilterService.register(`custom_${field}`, (...args) => filterFunction(...args, { column }));
+			}
+		});
 
 		return columns;
 	}, [props.columns, props.reorderableColumns, columnOrderState]);
@@ -992,11 +1001,23 @@ export function DataTable(inProps) {
 
 	const executeLocalFilter = React.useCallback((field, rowData, filterMeta, index) => {
 		const filterValue = filterMeta.value;
-		const filterMatchMode = filterMeta.matchMode === 'custom' ? `custom_${field}` : filterMeta.matchMode || FilterMatchMode.STARTS_WITH;
-		const dataFieldValue = ObjectUtils.resolveFieldData(rowData, field);
-		const filterConstraint = FilterService.filters[filterMatchMode];
+		const matchMode = filterMeta.matchMode || FilterMatchMode.STARTS_WITH;
 
-		return ObjectUtils.isFunction(filterConstraint) && filterConstraint(dataFieldValue, filterValue, props.filterLocale, index);
+		function filter(value, filterValue, matchMode) {
+			const filterConstraint = FilterService.filters[matchMode];
+
+			return ObjectUtils.isFunction(filterConstraint) && filterConstraint(value, filterValue, props.filterLocale, index);
+		}
+
+		const customFilter = FilterService.filters[`custom_${field}`];
+
+		if (customFilter == null) {
+			const value = ObjectUtils.resolveFieldData(rowData, field);
+
+			return filter(value, filterValue, matchMode);
+		}
+
+		return customFilter(rowData, filterValue, matchMode, filter);
 	}, [props.filterLocale]);
 
 	const filterLocal = React.useCallback((data, filters) => {
@@ -1100,17 +1121,12 @@ export function DataTable(inProps) {
 		} else {
 			cloned = columns.reduce((filters, col) => {
 				const field = getColumnProp(col, 'filterField') || getColumnProp(col, 'field');
-				const filterFunction = getColumnProp(col, 'filterFunction');
 				const dataType = getColumnProp(col, 'dataType');
 				const matchMode = getColumnProp(col, 'filterMatchMode')
 					|| ((context && context.filterMatchModeOptions[dataType]) || PrimeReact.filterMatchModeOptions[dataType]
 						? (context && context.filterMatchModeOptions[dataType][0]) || PrimeReact.filterMatchModeOptions[dataType][0]
 						: FilterMatchMode.STARTS_WITH);
 				const constraint = { value: null, matchMode };
-
-				if (filterFunction) {
-					FilterService.register(`custom_${field}`, (...args) => filterFunction(...args, { column: col }));
-				}
 
 				filters[field] = props.filterDisplay === 'menu' ? { operator: FilterOperator.AND, constraints: [constraint] } : constraint;
 
