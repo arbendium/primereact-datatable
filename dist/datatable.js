@@ -680,6 +680,7 @@ const DataTableBase = ComponentBase.extend({
     onSort: null,
     onStateRestore: null,
     onStateSave: null,
+    onValueChange: null,
     pageLinkSize: 5,
     paginator: false,
     paginatorClassName: null,
@@ -5816,6 +5817,9 @@ function DataTable(inProps) {
     }
     return data;
   }, [props.value, filters, sortField, sortOrder, multiSortMeta, columns, props.globalFilter, filterLocal, props.sortMode, sortSingle, sortMultiple]);
+  React.useEffect(() => {
+    props.onValueChange?.(data);
+  }, [data]);
   const totalRecords = data ? data.length : 0;
   const empty = ObjectUtils.isEmpty(data);
   const selectable = props.selectionMode || selectionModeInColumn;

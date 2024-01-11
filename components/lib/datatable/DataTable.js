@@ -1304,6 +1304,10 @@ export function DataTable(inProps) {
 		sortMultiple
 	]);
 
+	React.useEffect(() => {
+		props.onValueChange?.(data);
+	}, [data]);
+
 	const totalRecords = data ? data.length : 0;
 	const empty = ObjectUtils.isEmpty(data);
 	const selectable = props.selectionMode || selectionModeInColumn;

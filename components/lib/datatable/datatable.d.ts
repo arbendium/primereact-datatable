@@ -1591,6 +1591,11 @@ interface DataTableBaseProps<TValue extends DataTableValueArray> extends Omit<Re
      */
     onStateSave?(state: object): void;
     /**
+     * Callback to invoke after filtering and sorting to pass the rendered value.
+     * @param {DataTableRowDataArray<TValue>} value - Value displayed by the table.
+     */
+    onValueChange?(value: DataTableRowDataArray<TValue>): void;
+    /**
      * Function that takes the row data and returns an object in &#123;'styleclass' : condition&#125; format to define a classname for a particular now.
      * @param {DataTableRowData<TValue>} data - Value displayed by the table.
      */
