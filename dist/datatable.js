@@ -5582,7 +5582,7 @@ function DataTable(inProps) {
     const activeFilters = Object.entries(filters)
     // eslint-disable-next-line array-callback-return
     .map(([key, value]) => {
-      if (key !== 'global') {
+      if (key !== 'global' && columns.some(col => (getColumnProp(col, 'filterField') ?? getColumnProp(col, 'field')) === key)) {
         const filter = activeFilter(value);
         if (filter) {
           return [key, filter];
