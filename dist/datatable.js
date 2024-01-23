@@ -4734,6 +4734,25 @@ TableHeader.displayName = 'TableHeader';
 
 const emptyArray = [];
 const getColumnProp = (column, name) => ColumnBase.getCProp(column, name);
+const getActiveFilters = filters => {
+  const removeEmptyFilters = ([key, value]) => {
+    if (value.constraints) {
+      const filteredConstraints = value.constraints.filter(constraint => constraint.value !== null);
+      if (filteredConstraints.length > 0) {
+        return [key, {
+          ...value,
+          constraints: filteredConstraints
+        }];
+      }
+    } else if (value.value !== null) {
+      return [key, value];
+    }
+    return undefined;
+  };
+  const filterValidEntries = entry => entry !== undefined;
+  const entries = Object.entries(filters).map(removeEmptyFilters).filter(filterValidEntries);
+  return Object.fromEntries(entries);
+};
 function DataTable(inProps) {
   const context = React.useContext(PrimeReactContext);
   const props = React.useMemo(() => DataTableBase.getProps(inProps, context), [inProps, context]);
@@ -5566,74 +5585,68 @@ function DataTable(inProps) {
     return customFilter(rowData, filterValue, matchMode, filter);
   }, [props.filterLocale]);
   const filterLocal = React.useCallback((data, filters) => {
-    function activeFilter(value) {
-      if (value.constraints) {
-        const filteredConstraints = value.constraints.filter(constraint => constraint.value !== null);
-        if (filteredConstraints.length > 0) {
-          return {
-            ...value,
-            constraints: filteredConstraints
-          };
-        }
-      } else if (value.value !== null) {
-        return value;
-      }
+    if (!data) return;
+    const activeFilters = filters ? getActiveFilters(filters) : {};
+    let filteredValue = [];
+    const isGlobalFilter = activeFilters.global || props.globalFilter;
+    let globalFilterFieldsArray;
+    if (isGlobalFilter) {
+      globalFilterFieldsArray = props.globalFilterFields || columns.filter(col => !getColumnProp(col, 'excludeGlobalFilter')).map(col => getColumnProp(col, 'filterField') || getColumnProp(col, 'field'));
     }
-    const activeFilters = Object.entries(filters)
-    // eslint-disable-next-line array-callback-return
-    .map(([key, value]) => {
-      if (key !== 'global' && columns.some(col => (getColumnProp(col, 'filterField') ?? getColumnProp(col, 'field')) === key)) {
-        const filter = activeFilter(value);
-        if (filter) {
-          return [key, filter];
-        }
-      }
-    }).filter(entry => entry !== undefined);
-    const globalFilter = filters.global ? activeFilter(filters.global) : undefined;
-    const filteredValue = [];
-    const globalFilterFieldsArray = globalFilter || props.globalFilter ? props.globalFilterFields || columns.filter(col => !getColumnProp(col, 'excludeGlobalFilter')).map(col => getColumnProp(col, 'filterField') || getColumnProp(col, 'field')) : undefined;
     for (let i = 0; i < data.length; i++) {
       let localMatch = true;
       let globalMatch = false;
       let localFiltered = false;
-      for (const [filterField, filterMeta] of activeFilters) {
-        localFiltered = true;
-        if (filterMeta.operator) {
-          for (let j = 0; j < filterMeta.constraints.length; j++) {
-            const filterConstraint = filterMeta.constraints[j];
-            localMatch = executeLocalFilter(filterField, data[i], filterConstraint, j);
-            if (filterMeta.operator === FilterOperator.OR && localMatch || filterMeta.operator === FilterOperator.AND && !localMatch) {
-              break;
-            }
-          }
-        } else {
-          localMatch = executeLocalFilter(filterField, data[i], filterMeta, 0);
+      for (const prop in activeFilters) {
+        if (prop === 'null') {
+          continue;
         }
-        if (!localMatch) {
-          break;
+        if (Object.prototype.hasOwnProperty.call(activeFilters, prop) && prop !== 'global') {
+          localFiltered = true;
+          const filterField = prop;
+          const filterMeta = activeFilters[filterField];
+          if (filterMeta.operator) {
+            for (let j = 0; j < filterMeta.constraints.length; j++) {
+              const filterConstraint = filterMeta.constraints[j];
+              localMatch = executeLocalFilter(filterField, data[i], filterConstraint, j);
+              if (filterMeta.operator === FilterOperator.OR && localMatch || filterMeta.operator === FilterOperator.AND && !localMatch) {
+                break;
+              }
+            }
+          } else {
+            localMatch = executeLocalFilter(filterField, data[i], filterMeta, 0);
+          }
+          if (!localMatch) {
+            break;
+          }
         }
       }
-      if (localMatch && !globalMatch && globalFilterFieldsArray) {
+      if (localMatch && isGlobalFilter && !globalMatch && globalFilterFieldsArray) {
         for (let j = 0; j < globalFilterFieldsArray.length; j++) {
           const globalFilterField = globalFilterFieldsArray[j];
-          const matchMode = globalFilter ? globalFilter.matchMode : props.globalFilterMatchMode;
-          const value = globalFilter ? globalFilter.value : props.globalFilter;
+          const matchMode = activeFilters.global ? activeFilters.global.matchMode : props.globalFilterMatchMode;
+          const value = activeFilters.global ? activeFilters.global.value : props.globalFilter;
           globalMatch = FilterService.filters[matchMode](ObjectUtils.resolveFieldData(data[i], globalFilterField), value, props.filterLocale);
           if (globalMatch) {
             break;
           }
         }
       }
-      const matches = globalFilterFieldsArray ? localFiltered ? localFiltered && localMatch && globalMatch : globalMatch : localFiltered && localMatch;
+      let matches;
+      if (isGlobalFilter) {
+        matches = localFiltered ? localFiltered && localMatch && globalMatch : globalMatch;
+      } else {
+        matches = localFiltered && localMatch;
+      }
       if (matches) {
         filteredValue.push(data[i]);
       }
     }
-    if (filteredValue.length === props.value.length) {
-      return data;
+    if (filteredValue.length === props.value.length || Object.keys(activeFilters).length === 0) {
+      filteredValue = data;
     }
     return filteredValue;
-  }, [filters, props.globalFilter, props.globalFilterFields, columns, executeLocalFilter, props.filterLocale, props.globalFilterMatchMode, props.value]);
+  }, [props.globalFilter, props.globalFilterFields, columns, executeLocalFilter, props.filterLocale, props.globalFilterMatchMode, props.value]);
   const cloneFilters = filters => {
     const cloned = {};
     if (filters) {
