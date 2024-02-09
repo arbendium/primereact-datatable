@@ -4819,7 +4819,7 @@ function DataTable(inProps) {
     let columns = props.columns.map(props => ({
       props
     }));
-    if (props.reorderableColumns && columnOrderState) {
+    if (props.reorderableColumns && columnOrderState && !props.onColReorder) {
       const orderedColumns = [];
       for (const columnKey of columnOrderState) {
         const column = columns.find(col => getColumnProp(col, 'columnKey') === columnKey || getColumnProp(col, 'field') === columnKey);
@@ -4839,7 +4839,7 @@ function DataTable(inProps) {
       }
     });
     return columns;
-  }, [props.columns, props.reorderableColumns, columnOrderState]);
+  }, [props.columns, props.reorderableColumns, props.onColReorder ? columnOrderState : undefined]);
   const getStorage = () => {
     switch (props.stateStorage) {
       case 'local':
@@ -4871,7 +4871,7 @@ function DataTable(inProps) {
     if (props.resizableColumns) {
       saveColumnWidths(state);
     }
-    if (props.reorderableColumns) {
+    if (props.reorderableColumns && !props.onColReorder) {
       state.columnOrder = columnOrderState;
     }
     if (props.expandedRows) {
@@ -4951,7 +4951,7 @@ function DataTable(inProps) {
         tableWidthState.current = restoredState.tableWidth;
         restoreColumnWidths();
       }
-      if (props.reorderableColumns) {
+      if (props.reorderableColumns && !props.onColReorder) {
         setColumnOrderState(restoredState.columnOrder);
       }
       if (restoredState.expandedRows && props.onRowToggle) {
@@ -5317,11 +5317,6 @@ function DataTable(inProps) {
           dropColIndex--;
         }
         ObjectUtils.reorderArray(columns, dragColIndex, dropColIndex);
-        const columnOrder = columns.reduce((orders, col) => {
-          orders.push(getColumnProp(col, 'columnKey') || getColumnProp(col, 'field'));
-          return orders;
-        }, []);
-        setColumnOrderState(columnOrder);
         if (props.onColReorder) {
           props.onColReorder({
             originalEvent: event,
@@ -5329,6 +5324,12 @@ function DataTable(inProps) {
             dropIndex: dropColIndex,
             columns
           });
+        } else {
+          const columnOrder = columns.reduce((orders, col) => {
+            orders.push(getColumnProp(col, 'columnKey') || getColumnProp(col, 'field'));
+            return orders;
+          }, []);
+          setColumnOrderState(columnOrder);
         }
       }
       reorderIndicatorUpRef.current.style.display = 'none';

@@ -124,7 +124,7 @@ export function DataTable(inProps) {
 	const columns = React.useMemo(() => {
 		let columns = props.columns.map(props => ({ props }));
 
-		if (props.reorderableColumns && columnOrderState) {
+		if (props.reorderableColumns && columnOrderState && !props.onColReorder) {
 			const orderedColumns = [];
 
 			for (const columnKey of columnOrderState) {
@@ -148,7 +148,7 @@ export function DataTable(inProps) {
 		});
 
 		return columns;
-	}, [props.columns, props.reorderableColumns, columnOrderState]);
+	}, [props.columns, props.reorderableColumns, props.onColReorder ? columnOrderState : undefined]);
 
 	const getStorage = () => {
 		switch (props.stateStorage) {
@@ -191,7 +191,7 @@ export function DataTable(inProps) {
 			saveColumnWidths(state);
 		}
 
-		if (props.reorderableColumns) {
+		if (props.reorderableColumns && !props.onColReorder) {
 			state.columnOrder = columnOrderState;
 		}
 
@@ -293,7 +293,7 @@ export function DataTable(inProps) {
 				restoreColumnWidths();
 			}
 
-			if (props.reorderableColumns) {
+			if (props.reorderableColumns && !props.onColReorder) {
 				setColumnOrderState(restoredState.columnOrder);
 			}
 
@@ -704,14 +704,6 @@ export function DataTable(inProps) {
 
 				ObjectUtils.reorderArray(columns, dragColIndex, dropColIndex);
 
-				const columnOrder = columns.reduce((orders, col) => {
-					orders.push(getColumnProp(col, 'columnKey') || getColumnProp(col, 'field'));
-
-					return orders;
-				}, []);
-
-				setColumnOrderState(columnOrder);
-
 				if (props.onColReorder) {
 					props.onColReorder({
 						originalEvent: event,
@@ -719,6 +711,14 @@ export function DataTable(inProps) {
 						dropIndex: dropColIndex,
 						columns
 					});
+				} else {
+					const columnOrder = columns.reduce((orders, col) => {
+						orders.push(getColumnProp(col, 'columnKey') || getColumnProp(col, 'field'));
+
+						return orders;
+					}, []);
+
+					setColumnOrderState(columnOrder);
 				}
 			}
 
