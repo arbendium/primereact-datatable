@@ -5303,13 +5303,15 @@ function DataTable(inProps) {
         const isSameColumn = (col1, col2) => getColumnProp(col1, 'columnKey') || getColumnProp(col2, 'columnKey') ? ObjectUtils.equals(col1.props, col2.props, 'columnKey') : ObjectUtils.equals(col1.props, col2.props, 'field');
         const dragColIndex = columns.findIndex(child => isSameColumn(child, draggedColumn.current));
         let dropColIndex = columns.findIndex(child => isSameColumn(child, column));
-        const widths = [];
-        const headers = DomHandler.find(tableRef.current, '[data-pc-section="thead"] > tr > th');
-        headers.forEach(header => widths.push(DomHandler.getOuterWidth(header)));
-        const movedItem = widths.find((items, index) => index === dragColIndex);
-        const remainingItems = widths.filter((items, index) => index !== dragColIndex);
-        const reorderedWidths = [...remainingItems.slice(0, dropColIndex), movedItem, ...remainingItems.slice(dropColIndex)];
-        addColumnWidthStyles(reorderedWidths);
+        if (props.resizableColumns) {
+          const widths = [];
+          const headers = DomHandler.find(tableRef.current, '.p-datatable-thead > tr > th');
+          headers.forEach(header => widths.push(DomHandler.getOuterWidth(header)));
+          const movedItem = widths.find((items, index) => index === dragColIndex);
+          const remainingItems = widths.filter((items, index) => index !== dragColIndex);
+          const reorderedWidths = [...remainingItems.slice(0, dropColIndex), movedItem, ...remainingItems.slice(dropColIndex)];
+          addColumnWidthStyles(reorderedWidths);
+        }
         if (dropColIndex < dragColIndex && dropPosition.current === 1) {
           dropColIndex++;
         }
