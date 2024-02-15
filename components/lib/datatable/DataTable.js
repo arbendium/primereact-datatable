@@ -1136,18 +1136,23 @@ export function DataTable(inProps) {
 	const cloneFilters = filters => {
 		const cloned = {};
 
-		if (filters) {
-			Object.entries(filters).forEach(([prop, value]) => {
-				cloned[prop] = value.operator
+		columns.forEach(col => {
+			const field = getColumnProp(col, 'filterField') || getColumnProp(col, 'field');
+
+			if (field == null) {
+				return;
+			}
+
+			const filter = filters?.[field];
+
+			if (filter != null) {
+				cloned[field] = filter.operator
 					? {
-						operator: value.operator,
-						constraints: value.constraints.map(constraint => ({ ...constraint }))
+						operator: filter.operator,
+						constraints: filter.constraints.map(constraint => ({ ...constraint }))
 					}
-					: { ...value };
-			});
-		} else {
-			columns.forEach(col => {
-				const field = getColumnProp(col, 'filterField') || getColumnProp(col, 'field');
+					: { ...filter };
+			} else {
 				const dataType = getColumnProp(col, 'dataType');
 				const matchMode = getColumnProp(col, 'filterMatchMode')
 					|| ((context && context.filterMatchModeOptions[dataType]) || PrimeReact.filterMatchModeOptions[dataType]
@@ -1156,8 +1161,8 @@ export function DataTable(inProps) {
 				const constraint = { value: null, matchMode };
 
 				cloned[field] = props.filterDisplay === 'menu' ? { operator: FilterOperator.AND, constraints: [constraint] } : constraint;
-			});
-		}
+			}
+		});
 
 		return cloned;
 	};

@@ -5665,20 +5665,22 @@ function DataTable(inProps) {
   }, [filters, props.globalFilter, props.globalFilterFields, columns, executeLocalFilter, props.filterLocale, props.globalFilterMatchMode, props.value]);
   const cloneFilters = filters => {
     const cloned = {};
-    if (filters) {
-      Object.entries(filters).forEach(([prop, value]) => {
-        cloned[prop] = value.operator ? {
-          operator: value.operator,
-          constraints: value.constraints.map(constraint => ({
+    columns.forEach(col => {
+      const field = getColumnProp(col, 'filterField') || getColumnProp(col, 'field');
+      if (field == null) {
+        return;
+      }
+      const filter = filters?.[field];
+      if (filter != null) {
+        cloned[field] = filter.operator ? {
+          operator: filter.operator,
+          constraints: filter.constraints.map(constraint => ({
             ...constraint
           }))
         } : {
-          ...value
+          ...filter
         };
-      });
-    } else {
-      columns.forEach(col => {
-        const field = getColumnProp(col, 'filterField') || getColumnProp(col, 'field');
+      } else {
         const dataType = getColumnProp(col, 'dataType');
         const matchMode = getColumnProp(col, 'filterMatchMode') || (context && context.filterMatchModeOptions[dataType] || PrimeReact.filterMatchModeOptions[dataType] ? context && context.filterMatchModeOptions[dataType][0] || PrimeReact.filterMatchModeOptions[dataType][0] : FilterMatchMode.STARTS_WITH);
         const constraint = {
@@ -5689,8 +5691,8 @@ function DataTable(inProps) {
           operator: FilterOperator.AND,
           constraints: [constraint]
         } : constraint;
-      });
-    }
+      }
+    });
     return cloned;
   };
   const filter = (value, field, matchMode, index = 0) => {
