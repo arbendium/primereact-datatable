@@ -1095,8 +1095,7 @@ export function DataTable(inProps) {
 	]);
 
 	const cloneFilters = filters => {
-		filters = filters || props.filters;
-		let cloned = {};
+		const cloned = {};
 
 		if (filters) {
 			Object.entries(filters).forEach(([prop, value]) => {
@@ -1108,7 +1107,7 @@ export function DataTable(inProps) {
 					: { ...value };
 			});
 		} else {
-			cloned = columns.reduce((filters, col) => {
+			columns.forEach(col => {
 				const field = getColumnProp(col, 'filterField') || getColumnProp(col, 'field');
 				const dataType = getColumnProp(col, 'dataType');
 				const matchMode = getColumnProp(col, 'filterMatchMode')
@@ -1117,10 +1116,8 @@ export function DataTable(inProps) {
 						: FilterMatchMode.STARTS_WITH);
 				const constraint = { value: null, matchMode };
 
-				filters[field] = props.filterDisplay === 'menu' ? { operator: FilterOperator.AND, constraints: [constraint] } : constraint;
-
-				return filters;
-			}, {});
+				cloned[field] = props.filterDisplay === 'menu' ? { operator: FilterOperator.AND, constraints: [constraint] } : constraint;
+			});
 		}
 
 		return cloned;
