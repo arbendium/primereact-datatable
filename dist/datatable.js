@@ -5661,8 +5661,7 @@ function DataTable(inProps) {
     return filteredValue;
   }, [filters, props.globalFilter, props.globalFilterFields, columns, executeLocalFilter, props.filterLocale, props.globalFilterMatchMode, props.value]);
   const cloneFilters = filters => {
-    filters = filters || props.filters;
-    let cloned = {};
+    const cloned = {};
     if (filters) {
       Object.entries(filters).forEach(([prop, value]) => {
         cloned[prop] = value.operator ? {
@@ -5675,7 +5674,7 @@ function DataTable(inProps) {
         };
       });
     } else {
-      cloned = columns.reduce((filters, col) => {
+      columns.forEach(col => {
         const field = getColumnProp(col, 'filterField') || getColumnProp(col, 'field');
         const dataType = getColumnProp(col, 'dataType');
         const matchMode = getColumnProp(col, 'filterMatchMode') || (context && context.filterMatchModeOptions[dataType] || PrimeReact.filterMatchModeOptions[dataType] ? context && context.filterMatchModeOptions[dataType][0] || PrimeReact.filterMatchModeOptions[dataType][0] : FilterMatchMode.STARTS_WITH);
@@ -5683,12 +5682,11 @@ function DataTable(inProps) {
           value: null,
           matchMode
         };
-        filters[field] = props.filterDisplay === 'menu' ? {
+        cloned[field] = props.filterDisplay === 'menu' ? {
           operator: FilterOperator.AND,
           constraints: [constraint]
         } : constraint;
-        return filters;
-      }, {});
+      });
     }
     return cloned;
   };
