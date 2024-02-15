@@ -1091,7 +1091,8 @@ export function DataTable(inProps) {
 	}, [props.globalFilter, props.globalFilterFields, columns, executeLocalFilter, props.filterLocale, props.globalFilterMatchMode, props.value]);
 
 	const cloneFilters = filters => {
-		const cloned = {};
+		filters = filters || props.filters;
+		let cloned = {};
 
 		if (filters) {
 			Object.entries(filters).forEach(([prop, value]) => {
@@ -1103,7 +1104,7 @@ export function DataTable(inProps) {
 					: { ...value };
 			});
 		} else {
-			columns.forEach(col => {
+			cloned = columns.reduce((filters, col) => {
 				const field = getColumnProp(col, 'filterField') || getColumnProp(col, 'field');
 				const dataType = getColumnProp(col, 'dataType');
 				const matchMode = getColumnProp(col, 'filterMatchMode')
@@ -1112,8 +1113,10 @@ export function DataTable(inProps) {
 						: FilterMatchMode.STARTS_WITH);
 				const constraint = { value: null, matchMode };
 
-				cloned[field] = props.filterDisplay === 'menu' ? { operator: FilterOperator.AND, constraints: [constraint] } : constraint;
-			});
+				filters[field] = props.filterDisplay === 'menu' ? { operator: FilterOperator.AND, constraints: [constraint] } : constraint;
+
+				return filters;
+			}, {});
 		}
 
 		return cloned;
